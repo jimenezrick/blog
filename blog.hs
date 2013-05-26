@@ -16,14 +16,14 @@ data Config = Config { port  :: Int
                      } deriving (Show, Read)
 
 defaultConfig :: Config
-defaultConfig = Config 8000 "." "My Blog"
+defaultConfig = Config 8000 "/" "My Blog"
 
 main :: IO ()
 main = do
-      S.scotty (port defaultConfig) $ do
+    S.scotty (port defaultConfig) $ do
         S.get "/blog" $ do
-          index <- liftIO $ dispatch renderIndex
-          render index
+            index <- liftIO $ dispatch renderIndex
+            render index
     where dispatch = flip runReaderT $ defaultConfig
           render   = S.html . R.renderHtml
 
@@ -33,12 +33,12 @@ renderIndex = do
     title <- blogTitle
     posts <- liftM (map H.toHtml) listPosts
     return $ H.docTypeHtml $ do
-            H.head $ do
-                H.title $ H.toHtml title
-            H.body $ do
-                H.h1 "rlog"
-                H.ul $
-                    mapM_ H.li posts
+        H.head $ do
+            H.title $ H.toHtml title
+        H.body $ do
+            H.h1 "rlog"
+            H.ul $ do
+                mapM_ H.li posts
 
 
 
