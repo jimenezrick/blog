@@ -20,7 +20,6 @@ defaultConfig = Config 8000 "." "My Blog"
 
 main :: IO ()
 main = do
-    liftIO $
       S.scotty (port defaultConfig) $ do
         S.get "/blog" $ do
           index <- liftIO $ dispatch renderIndex
@@ -47,7 +46,7 @@ renderIndex = do
 type Blog = ReaderT Config IO
 
 listPosts :: Blog [FilePath]
-listPosts = postsRoot >>= (liftIO . D.getDirectoryContents)
+listPosts = postsRoot >>= liftIO . D.getDirectoryContents
 
 postsRoot :: Blog FilePath
 postsRoot = liftM root ask
