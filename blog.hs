@@ -2,10 +2,9 @@
 
 import Control.Monad
 import Control.Monad.Reader
-import System.FilePath ((</>))
-
-import qualified Data.Text.Lazy                as T
-import qualified System.Directory              as D
+import Data.Text        (Text)
+import System.FilePath  ((</>))
+import System.Directory (getDirectoryContents)
 
 import qualified Text.Pandoc                   as P
 import qualified Web.Scotty                    as S
@@ -14,7 +13,7 @@ import qualified Text.Blaze.Html.Renderer.Text as R
 
 data Config = Config { port  :: Int
                      , root  :: FilePath
-                     , title :: T.Text
+                     , title :: Text
                      } deriving (Show, Read)
 
 defaultConfig :: Config
@@ -52,7 +51,7 @@ renderIndex = do
 type Blog = ReaderT Config IO
 
 listPosts :: Blog [FilePath]
-listPosts = postsRoot >>= liftIO . D.getDirectoryContents
+listPosts = postsRoot >>= liftIO . getDirectoryContents
 
 postsRoot :: Blog FilePath
 postsRoot = liftM root ask
@@ -60,7 +59,7 @@ postsRoot = liftM root ask
 httpPort :: Blog Int
 httpPort = liftM port ask
 
-blogTitle :: Blog T.Text
+blogTitle :: Blog Text
 blogTitle = liftM title ask
 
 
