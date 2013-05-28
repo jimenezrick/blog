@@ -88,15 +88,15 @@ isMarkdown file = elem (takeExtension file) [".md", ".mdown", ".markdown"]
 
 searchPosts :: Blog [FilePath]
 searchPosts = do
+    -- XXX: Protect for non-readable files
     parent <- reader configRoot
     files' <- liftIO $ getDirectoryContents parent
     let files = filter (`notElem` [".", ".."]) files'
-
     paths <- forM files $ \file -> do
         let path = parent </> file
-        isDir <- liftIO $ doesDirectoryExist file
+        isDir <- liftIO $ doesDirectoryExist path
         if isDir
           then local (\c -> c {configRoot = path}) searchPosts
-          else return $ guard (isMarkdown file) >> [file]
-
+          else return $ do guard (isMarkdown file)
+                           [file]
     return (concat paths)
