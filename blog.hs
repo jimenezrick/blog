@@ -2,26 +2,30 @@
 
 import Control.Monad
 import Control.Monad.Reader
+
 import Data.Text        (Text)
-import System.FilePath  ((</>))
-import System.Directory (getDirectoryContents)
+import System.FilePath  ((</>), takeExtension)
+import System.Directory (getDirectoryContents, doesDirectoryExist)
 
 import qualified Text.Pandoc                   as P
 import qualified Web.Scotty                    as S
 import qualified Text.Blaze.Html5              as H
 import qualified Text.Blaze.Html.Renderer.Text as R
 
-data Config = Config { port  :: Int
-                     , root  :: FilePath
-                     , title :: Text
+data Config = Config { configPort  :: Int
+                     , configRoot  :: FilePath
+                     , configTitle :: Text
                      } deriving (Show, Read)
 
+-- XXX: Read from cmd line params
 defaultConfig :: Config
 defaultConfig = Config 8000 "/tmp" "My Blog"
 
+type Blog = ReaderT Config IO
+
 main :: IO ()
 main = do
-    S.scotty (port defaultConfig) $ do
+    S.scotty (configPort defaultConfig) $ do
         S.get "/blog" $ do
             index <- liftIO $ dispatch renderIndex
             render index
@@ -31,8 +35,8 @@ main = do
 
 renderIndex :: Blog H.Html
 renderIndex = do
-    title <- blogTitle
-    index <- liftM (map H.toHtml) listPosts
+    title <- reader configTitle
+    posts <- liftM (map H.toHtml) searchPosts
     post <- renderPost "post.md" -- XXX
     return $ H.docTypeHtml $ do
         H.head $ do
@@ -40,7 +44,7 @@ renderIndex = do
         H.body $ do
             H.h1 "Blog"
             H.ul $ do
-                mapM_ H.li index
+                mapM_ H.li posts
             H.hr -- XXX
             post
 
@@ -48,19 +52,9 @@ renderIndex = do
 
 
 
-type Blog = ReaderT Config IO
 
-listPosts :: Blog [FilePath]
-listPosts = postsRoot >>= liftIO . getDirectoryContents
 
-postsRoot :: Blog FilePath
-postsRoot = liftM root ask
 
-httpPort :: Blog Int
-httpPort = liftM port ask
-
-blogTitle :: Blog Text
-blogTitle = liftM title ask
 
 
 
@@ -69,7 +63,40 @@ blogTitle = liftM title ask
 
 renderPost :: FilePath -> Blog H.Html
 renderPost path = do
-    root <- postsRoot
+    -- XXX: Protect for non-readable files
+    root <- reader configRoot
     text <- liftIO $ readFile $ root </> path
     -- TODO: try readMarkdownWithWarnings
     return $ P.writeHtml P.def $ P.readMarkdown P.def text
+    -- TODO: try: getReader :: String -> Either String (ReaderOptions -> String -> IO Pandoc)
+    -- Retrieve reader based on formatSpec (format+extensions).
+    --
+    -- readers :: [(String, ReaderOptions -> String -> IO Pandoc)]
+    -- (in Text.Pandoc)
+
+
+
+
+
+
+
+
+
+
+isMarkdown :: FilePath -> Bool
+isMarkdown file = elem (takeExtension file) [".md", ".mdown", ".markdown"]
+
+searchPosts :: Blog [FilePath]
+searchPosts = do
+    parent <- reader configRoot
+    files' <- liftIO $ getDirectoryContents parent
+    let files = filter (`notElem` [".", ".."]) files'
+
+    paths <- forM files $ \file -> do
+        let path = parent </> file
+        isDir <- liftIO $ doesDirectoryExist file
+        if isDir
+          then local (\c -> c {configRoot = path}) searchPosts
+          else return $ guard (isMarkdown file) >> [file]
+
+    return (concat paths)
