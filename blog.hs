@@ -2,6 +2,8 @@
 
 import Control.Monad
 import Control.Monad.Reader
+import Control.Exception
+import System.IO.Error
 
 import Data.Text        (Text)
 import System.FilePath  ((</>), takeExtension)
@@ -29,8 +31,8 @@ main = do
         S.get "/blog" $ do
             index <- liftIO $ dispatch renderIndex
             render index
-    where dispatch = flip runReaderT $ defaultConfig
-          render   = S.html . R.renderHtml
+        where dispatch = flip runReaderT $ defaultConfig
+              render   = S.html . R.renderHtml
 
 
 renderIndex :: Blog H.Html
@@ -88,15 +90,19 @@ isMarkdown file = elem (takeExtension file) [".md", ".mdown", ".markdown"]
 
 searchPosts :: Blog [FilePath]
 searchPosts = do
-    -- XXX: Protect for non-readable files
     parent <- reader configRoot
-    files' <- liftIO $ getDirectoryContents parent
-    let files = filter (`notElem` [".", ".."]) files'
-    paths <- forM files $ \file -> do
+    files  <- liftIO $ listDir parent
+    paths  <- forM files $ \file -> do
         let path = parent </> file
         isDir <- liftIO $ doesDirectoryExist path
         if isDir
           then local (\c -> c {configRoot = path}) searchPosts
           else return $ do guard (isMarkdown file)
-                           [file]
+                           [path]
     return (concat paths)
+        where check e   = isDoesNotExistError e || isPermissionError e
+              listDir d = do
+                  r <- tryJust (guard . check) $ getDirectoryContents d
+                  case r of
+                    Left _   -> return []
+                    Right fs -> return $ filter (`notElem` [".", ".."]) fs
