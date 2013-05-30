@@ -1,5 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+-- XXX: Test for space leaks with curl
+
+import Data.List
 import Control.Monad
 import Control.Monad.Reader
 import Control.Exception
@@ -34,11 +37,10 @@ main = do
         where dispatch = flip runReaderT $ defaultConfig
               render   = S.html . R.renderHtml
 
-
 renderIndex :: Blog H.Html
 renderIndex = do
     title <- reader configTitle
-    posts <- liftM (map H.toHtml) searchPosts
+    posts <- liftM (map H.toHtml . sort) searchPosts -- XXX: renderPostName
     post <- renderPost "post.md" -- XXX
     return $ H.docTypeHtml $ do
         H.head $ do
@@ -52,6 +54,10 @@ renderIndex = do
 
 
 
+-- XXX
+--renderPostName :: FilePath -> H.Html
+-- Extract from Pandoc doc attributes the title?
+-- XXX
 
 
 
@@ -65,25 +71,11 @@ renderIndex = do
 
 renderPost :: FilePath -> Blog H.Html
 renderPost path = do
-    -- XXX: Protect for non-readable files
+    -- XXX: Protect for non-readable files?
     root <- reader configRoot
     text <- liftIO $ readFile $ root </> path
     -- TODO: try readMarkdownWithWarnings
     return $ P.writeHtml P.def $ P.readMarkdown P.def text
-    -- TODO: try: getReader :: String -> Either String (ReaderOptions -> String -> IO Pandoc)
-    -- Retrieve reader based on formatSpec (format+extensions).
-    --
-    -- readers :: [(String, ReaderOptions -> String -> IO Pandoc)]
-    -- (in Text.Pandoc)
-
-
-
-
-
-
-
-
-
 
 isMarkdown :: FilePath -> Bool
 isMarkdown file = elem (takeExtension file) [".md", ".mdown", ".markdown"]
