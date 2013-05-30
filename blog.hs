@@ -8,9 +8,10 @@ import Control.Monad.Reader
 import Control.Exception
 import System.IO.Error
 
-import Data.Text        (Text)
-import System.FilePath  ((</>), takeExtension)
-import System.Directory (getDirectoryContents, doesDirectoryExist)
+import Data.Text              (Text, pack)
+import System.FilePath        ((</>), takeExtension)
+import System.Directory       (getDirectoryContents, doesDirectoryExist)
+import Text.Pandoc.Definition (Pandoc(..), Meta(..), Inline(..))
 
 import qualified Text.Pandoc                   as P
 import qualified Web.Scotty                    as S
@@ -56,12 +57,16 @@ renderIndex = do
 
 -- XXX
 --renderPostName :: FilePath -> H.Html
--- Extract from Pandoc doc attributes the title?
 -- XXX
 
 
 
 
+-- XXX": Extraer el resto de la info
+postTitle :: Pandoc -> Text
+postTitle (Pandoc (Meta t _ _ ) _) = extractTitle t
+    where extractTitle [Str s] = pack s -- XXX: Mejorar, que sucede si no hay title?
+          extractTitle _       = error "postTitle: non-textual title" -- XXX: Use filename replacing - and _ by spaces?
 
 
 
@@ -71,7 +76,6 @@ renderIndex = do
 
 renderPost :: FilePath -> Blog H.Html
 renderPost path = do
-    -- XXX: Protect for non-readable files?
     root <- reader configRoot
     text <- liftIO $ readFile $ root </> path
     -- TODO: try readMarkdownWithWarnings
