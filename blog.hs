@@ -8,15 +8,16 @@ import Control.Monad.Reader
 import Control.Exception
 import System.IO.Error
 
-import Data.Text              (Text, pack)
-import System.FilePath        ((</>), takeExtension)
-import System.Directory       (getDirectoryContents, doesDirectoryExist)
-import Text.Pandoc.Definition (Pandoc(..), Meta(..), Inline(..))
+import Data.Text                     (Text, pack)
+import System.FilePath               ((</>), takeExtension)
+import System.Directory              (getDirectoryContents, doesDirectoryExist)
+import Text.Pandoc.Definition        (Pandoc(..), Meta(..), Inline(..))
+import Text.Pandoc.Shared            (stringify)
+import Text.Blaze.Html.Renderer.Text (renderHtml)
 
-import qualified Text.Pandoc                   as P
-import qualified Web.Scotty                    as S
-import qualified Text.Blaze.Html5              as H
-import qualified Text.Blaze.Html.Renderer.Text as R
+import qualified Text.Pandoc      as P
+import qualified Web.Scotty       as S
+import qualified Text.Blaze.Html5 as H
 
 data Config = Config { configPort  :: Int
                      , configRoot  :: FilePath
@@ -36,7 +37,7 @@ main = do
             index <- liftIO $ dispatch renderIndex
             render index
         where dispatch = flip runReaderT $ defaultConfig
-              render   = S.html . R.renderHtml
+              render   = S.html . renderHtml
 
 renderIndex :: Blog H.Html
 renderIndex = do
@@ -58,11 +59,8 @@ renderPostName path = do
     text <- readPost path
     return $ H.toHtml $ postTitle $ fromMarkdown text
 
--- XXX": Extraer el resto de la info?
 postTitle :: Pandoc -> Text
-postTitle (Pandoc (Meta t _ _ ) _) = extractTitle t
-    where extractTitle [Str s] = pack s -- XXX: Mejorar, que sucede si no hay title?
-          extractTitle _       = error "postTitle: non-textual title" -- XXX: Use filename replacing - and _ by spaces?
+postTitle (Pandoc (Meta t _ _ ) _) = pack $ stringify t
 
 renderPost :: FilePath -> Blog H.Html
 renderPost path = do
