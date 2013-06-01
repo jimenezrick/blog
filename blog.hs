@@ -9,9 +9,9 @@ import Control.Exception
 import System.IO.Error
 
 import Data.Text                     (Text, pack)
-import System.FilePath               ((</>), takeExtension)
+import System.FilePath               ((</>), takeFileName, takeExtension, dropExtension)
 import System.Directory              (getDirectoryContents, doesDirectoryExist)
-import Text.Pandoc.Definition        (Pandoc(..), Meta(..), Inline(..))
+import Text.Pandoc.Definition        (Pandoc(..), Meta(..))
 import Text.Pandoc.Shared            (stringify)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 
@@ -57,10 +57,20 @@ renderIndex = do
 renderPostName :: FilePath -> Blog H.Html
 renderPostName path = do
     text <- readPost path
-    return $ H.toHtml $ postTitle $ fromMarkdown text
+    let post  = fromMarkdown text
+        title = maybe (titleFromFilename path) id (postTitle post)
+    return $ H.toHtml title
 
-postTitle :: Pandoc -> Text
-postTitle (Pandoc (Meta t _ _ ) _) = pack $ stringify t
+postTitle :: Pandoc -> Maybe String
+postTitle (Pandoc (Meta t _ _ ) _) = case stringify t of
+                                       [] -> Nothing
+                                       s  -> Just s
+
+titleFromFilename :: FilePath -> String
+titleFromFilename file = foldr f [] $ (dropExtension . takeFileName) file
+    where f '-' cs = ' ':cs
+          f '_' cs = ' ':cs
+          f c   cs = c:cs
 
 renderPost :: FilePath -> Blog H.Html
 renderPost path = do
