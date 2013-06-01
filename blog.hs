@@ -25,7 +25,7 @@ data Config = Config { configPort  :: Int
 
 -- XXX: Read from cmd line params
 defaultConfig :: Config
-defaultConfig = Config 8000 "/tmp" "My Blog"
+defaultConfig = Config 8000 "." "rlog"
 
 type Blog = ReaderT Config IO
 
@@ -40,52 +40,55 @@ main = do
 
 renderIndex :: Blog H.Html
 renderIndex = do
-    title <- reader configTitle
-    posts <- liftM (map H.toHtml . sort) searchPosts -- XXX: renderPostName
-    post <- renderPost "post.md" -- XXX
+    title      <- reader configTitle
+    postPaths  <- liftM sort searchPosts
+    postTitles <- mapM renderPostName postPaths
     return $ H.docTypeHtml $ do
         H.head $ do
             H.title $ H.toHtml title
         H.body $ do
-            H.h1 "Blog"
+            H.h1 $ H.toHtml title
+            H.hr
             H.ul $ do
-                mapM_ H.li posts
-            H.hr -- XXX
-            post
+                mapM_ H.li postTitles
+            H.hr
 
+renderPostName :: FilePath -> Blog H.Html
+renderPostName path = do
+    text <- readPost path
+    return $ H.toHtml $ postTitle $ fromMarkdown text
 
-
--- XXX
---renderPostName :: FilePath -> H.Html
--- XXX
-
-
-
-
--- XXX": Extraer el resto de la info
+-- XXX": Extraer el resto de la info?
 postTitle :: Pandoc -> Text
 postTitle (Pandoc (Meta t _ _ ) _) = extractTitle t
     where extractTitle [Str s] = pack s -- XXX: Mejorar, que sucede si no hay title?
           extractTitle _       = error "postTitle: non-textual title" -- XXX: Use filename replacing - and _ by spaces?
 
-
-
-
-
-
-
 renderPost :: FilePath -> Blog H.Html
 renderPost path = do
+    -- TODO: try readMarkdownWithWarnings
+    text <- readPost path
+    return $ toHtml $ fromMarkdown text
+
+readPost :: FilePath -> Blog String
+readPost path = do
+    -- XXX: Handle up error case like in searchPosts?
     root <- reader configRoot
     text <- liftIO $ readFile $ root </> path
-    -- TODO: try readMarkdownWithWarnings
-    return $ P.writeHtml P.def $ P.readMarkdown P.def text
+    return text
+
+fromMarkdown :: String -> Pandoc
+fromMarkdown = P.readMarkdown P.def
+
+toHtml :: Pandoc -> H.Html
+toHtml = P.writeHtml P.def -- TODO: HTML5?
 
 isMarkdown :: FilePath -> Bool
 isMarkdown file = elem (takeExtension file) [".md", ".mdown", ".markdown"]
 
 searchPosts :: Blog [FilePath]
 searchPosts = do
+    -- XXX: Move upper error handling
     parent <- reader configRoot
     files  <- liftIO $ listDir parent
     paths  <- forM files $ \file -> do
