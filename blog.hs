@@ -39,8 +39,8 @@ main = do
             index <- liftIO $ dispatch renderIndex
             render index
         --S.get "/blog/post/..." $ do
-        where dispatch = flip runReaderT $ defaultConfig
-              render   = S.html . renderHtml
+    where dispatch = flip runReaderT $ defaultConfig
+          render   = S.html . renderHtml
 
 renderIndex :: Blog H.Html
 renderIndex = do
