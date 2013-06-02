@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- XXX: Test for space leaks with curl
+-- FIXME: Scotty returns 404 without <html>! Fix?
 
 import Data.List
 import Control.Monad
@@ -8,16 +9,17 @@ import Control.Monad.Reader
 import Control.Exception
 import System.IO.Error
 
-import Data.Text                     (Text, pack)
+import Data.Text                     (Text)
 import System.FilePath               ((</>), takeFileName, takeExtension, dropExtension)
 import System.Directory              (getDirectoryContents, doesDirectoryExist)
 import Text.Pandoc.Definition        (Pandoc(..), Meta(..))
 import Text.Pandoc.Shared            (stringify)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 
-import qualified Text.Pandoc      as P
-import qualified Web.Scotty       as S
-import qualified Text.Blaze.Html5 as H
+import qualified Text.Pandoc                 as P
+import qualified Web.Scotty                  as S
+import qualified Text.Blaze.Html5            as H
+import qualified Text.Blaze.Html5.Attributes as HA
 
 data Config = Config { configPort  :: Int
                      , configRoot  :: FilePath
@@ -36,6 +38,7 @@ main = do
         S.get "/blog" $ do
             index <- liftIO $ dispatch renderIndex
             render index
+        --S.get "/blog/post/..." $ do
         where dispatch = flip runReaderT $ defaultConfig
               render   = S.html . renderHtml
 
@@ -51,8 +54,11 @@ renderIndex = do
             H.h1 $ H.toHtml title
             H.hr
             H.ul $ do
-                mapM_ H.li postTitles
+                mapM_ (H.li . uncurry link) (zip postPaths postTitles)
             H.hr
+
+link :: String -> H.Html -> H.Html
+link u t = H.a H.! HA.href (H.toValue u) $ t
 
 renderPostName :: FilePath -> Blog H.Html
 renderPostName path = do
