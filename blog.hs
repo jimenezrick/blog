@@ -9,7 +9,7 @@ import Control.Monad.Reader
 import Control.Exception
 import System.IO.Error
 
-import Data.Text                     (Text)
+import Data.Text.Lazy                (Text)
 import System.FilePath               ((</>), takeFileName, takeExtension, dropExtension)
 import System.Directory              (getDirectoryContents, doesDirectoryExist)
 import Text.Pandoc.Definition        (Pandoc(..), Meta(..))
@@ -28,7 +28,7 @@ data Config = Config { configPort  :: Int
 
 -- XXX: Read from cmd line params
 defaultConfig :: Config
-defaultConfig = Config 8000 "." "rlog"
+defaultConfig = Config 8000 "posts" "rlog"
 
 type Blog = ReaderT Config IO
 
@@ -38,7 +38,16 @@ main = do
         S.get "/blog" $ do
             index <- liftIO $ dispatch renderIndex
             render index
-        --S.get "/blog/post/..." $ do
+        -- XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+        -- XXX: Read regex in Scotty code
+        S.get (S.regex "^/post/.*$") $ do
+            -- XXX: Show error when unable to read post
+            zero <- S.param "0"
+            --one <- S.param "1"
+            --two <- S.param "2"
+            -- TODO: try S.params
+            S.html $ zero
+        -- XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
     where dispatch = flip runReaderT $ defaultConfig
           render   = S.html . renderHtml
 
@@ -100,6 +109,10 @@ toHtml = P.writeHtml P.def -- TODO: HTML5?
 isMarkdown :: FilePath -> Bool
 isMarkdown file = elem (takeExtension file) [".md", ".mdown", ".markdown"]
 
+--
+-- FIXME: do not include configRoot in each iteration. Even better, put the
+--        recursive loop in IO, outside from Blog Monad.
+--
 searchPosts :: Blog [FilePath]
 searchPosts = do
     -- XXX: Move upper error handling
