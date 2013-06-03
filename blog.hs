@@ -37,19 +37,14 @@ main = do
     -- XXX: Handle exceptions from here
     S.scotty (configPort defaultConfig) $ do
         S.get "/blog" $ do
-            index <- liftIO $ dispatch renderIndex
+            index <- dispatch renderIndex
             render index
-        -- XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-        -- XXX: Read regex in Scotty code
-        S.get (S.regex "^/post/.*$") $ do
-            -- XXX: Show error when unable to read post
-            zero <- S.param "0"
-            --one <- S.param "1"
-            --two <- S.param "2"
-            -- TODO: try S.params
-            S.html $ zero
-        -- XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-    where dispatch = flip runReaderT $ defaultConfig
+        S.get (S.regex "^/post/(.+)$") $ do
+            path <- S.param "1"
+            -- TODO: locate file first trying all possible extensions
+            post <- dispatch $ renderPost (path ++ ".md")
+            render post
+    where dispatch = liftIO . flip runReaderT defaultConfig
           render   = S.html . renderHtml
 
 renderIndex :: Blog H.Html
@@ -116,10 +111,8 @@ searchPosts :: Blog [FilePath]
 searchPosts = do
     root <- reader configRoot
     liftIO $ search root "."
-        where list dir = liftM (filter (`notElem` [".", ".."]))
-                         $ getDirectoryContents dir
-              search root parent = do
-                  files <- list (root </> parent)
+        where search root parent = do
+                  files <- listDir (root </> parent)
                   paths <- forM files $ \file -> do
                       let path = parent </> file
                       isDir <- doesDirectoryExist (root </> path)
@@ -128,3 +121,6 @@ searchPosts = do
                         else return $ do guard (isMarkdown file)
                                          [path]
                   return (concat paths)
+
+listDir :: FilePath -> IO [FilePath]
+listDir dir = liftM (filter (`notElem` [".", ".."])) $ getDirectoryContents dir
