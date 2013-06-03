@@ -34,6 +34,7 @@ type Blog = ReaderT Config IO
 
 main :: IO ()
 main = do
+    -- XXX: Handle exceptions from here
     S.scotty (configPort defaultConfig) $ do
         S.get "/blog" $ do
             index <- liftIO $ dispatch renderIndex
@@ -63,11 +64,14 @@ renderIndex = do
             H.h1 $ H.toHtml title
             H.hr
             H.ul $ do
-                mapM_ (H.li . uncurry link) (zip postPaths postTitles)
+                mapM_ (H.li . uncurry postLink) (zip postPaths postTitles)
             H.hr
 
-link :: String -> H.Html -> H.Html
+link :: FilePath -> H.Html -> H.Html
 link u t = H.a H.! HA.href (H.toValue u) $ t
+
+postLink :: FilePath -> H.Html -> H.Html
+postLink = link . ("post" </>) . dropExtension
 
 renderPostName :: FilePath -> Blog H.Html
 renderPostName path = do
@@ -95,7 +99,6 @@ renderPost path = do
 
 readPost :: FilePath -> Blog String
 readPost path = do
-    -- XXX: Handle up error case like in searchPosts?
     root <- reader configRoot
     text <- liftIO $ readFile $ root </> path
     return text
@@ -109,26 +112,19 @@ toHtml = P.writeHtml P.def -- TODO: HTML5?
 isMarkdown :: FilePath -> Bool
 isMarkdown file = elem (takeExtension file) [".md", ".mdown", ".markdown"]
 
---
--- FIXME: do not include configRoot in each iteration. Even better, put the
---        recursive loop in IO, outside from Blog Monad.
---
 searchPosts :: Blog [FilePath]
 searchPosts = do
-    -- XXX: Move upper error handling
-    parent <- reader configRoot
-    files  <- liftIO $ listDir parent
-    paths  <- forM files $ \file -> do
-        let path = parent </> file
-        isDir <- liftIO $ doesDirectoryExist path
-        if isDir
-          then local (\c -> c {configRoot = path}) searchPosts
-          else return $ do guard (isMarkdown file)
-                           [path]
-    return (concat paths)
-        where check e   = isDoesNotExistError e || isPermissionError e
-              listDir d = do
-                  r <- tryJust (guard . check) $ getDirectoryContents d
-                  case r of
-                    Left _   -> return []
-                    Right fs -> return $ filter (`notElem` [".", ".."]) fs
+    root <- reader configRoot
+    liftIO $ search root "."
+        where list dir = liftM (filter (`notElem` [".", ".."]))
+                         $ getDirectoryContents dir
+              search root parent = do
+                  files <- list (root </> parent)
+                  paths <- forM files $ \file -> do
+                      let path = parent </> file
+                      isDir <- doesDirectoryExist (root </> path)
+                      if isDir
+                        then search root path
+                        else return $ do guard (isMarkdown file)
+                                         [path]
+                  return (concat paths)
