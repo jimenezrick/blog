@@ -28,6 +28,7 @@ data Config = Config { configPort  :: Int
 -- XXX: Add wai-static handler for serving statics
 -- XXX: Read from cmd line params
 -- XXX: Show more info about a post, date? Add home link in each post
+-- XXX: look in my web/r-log hakyll previous experiment
 defaultConfig :: Config
 defaultConfig = Config 8000 "posts" "rlog"
 
@@ -54,6 +55,7 @@ renderIndex = do
     postTitles <- mapM renderPostName postPaths
     return $ H.docTypeHtml $ do
         H.head $ do
+            utf8Charset
             H.title $ H.toHtml title
         H.body $ do
             H.h1 $ H.toHtml title
@@ -61,6 +63,9 @@ renderIndex = do
             H.ul $ do
                 mapM_ (H.li . uncurry postLink) (zip postPaths postTitles)
             H.hr
+
+utf8Charset :: H.Html
+utf8Charset = H.meta H.! HA.charset "utf-8"
 
 link :: FilePath -> H.Html -> H.Html
 link u t = H.a H.! HA.href (H.toValue u) $ t
@@ -97,6 +102,7 @@ renderPost path = do
         title   = postTitle path post
     return $ H.docTypeHtml $ do
         H.head $ do
+            utf8Charset
             H.title $ H.toHtml title
         H.body $ do
             H.h1 $ H.toHtml title
