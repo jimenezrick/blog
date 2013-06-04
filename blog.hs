@@ -1,8 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- XXX: Test for space leaks with curl
--- FIXME: Scotty returns 404 without <html>! Fix?
-
 import Data.List
 import Control.Monad
 import Control.Monad.Reader
@@ -42,7 +39,6 @@ main = do
             render index
         S.get (S.regex "^/post/(.+)$") $ do
             path <- S.param "1"
-            -- TODO: locate file first trying all possible extensions
             post <- dispatch $ renderPost (path ++ ".md")
             render post
     where dispatch = liftIO . flip runReaderT defaultConfig
@@ -105,7 +101,7 @@ toHtml :: Pandoc -> H.Html
 toHtml = P.writeHtml P.def {writerHtml5 = True}
 
 isMarkdown :: FilePath -> Bool
-isMarkdown file = elem (takeExtension file) [".md", ".mdown", ".markdown"]
+isMarkdown = (".md" ==) . takeExtension
 
 searchPosts :: Blog [FilePath]
 searchPosts = do
