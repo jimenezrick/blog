@@ -14,6 +14,7 @@ import System.FilePath               ((</>), takeFileName, takeExtension, dropEx
 import System.Directory              (getDirectoryContents, doesDirectoryExist)
 import Text.Pandoc.Definition        (Pandoc(..), Meta(..))
 import Text.Pandoc.Shared            (stringify)
+import Text.Pandoc.Options           (writerHtml5)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 
 import qualified Text.Pandoc                 as P
@@ -88,7 +89,6 @@ titleFromFilename file = foldr f [] $ (dropExtension . takeFileName) file
 
 renderPost :: FilePath -> Blog H.Html
 renderPost path = do
-    -- TODO: try readMarkdownWithWarnings
     text <- readPost path
     return $ toHtml $ fromMarkdown text
 
@@ -102,7 +102,7 @@ fromMarkdown :: String -> Pandoc
 fromMarkdown = P.readMarkdown P.def
 
 toHtml :: Pandoc -> H.Html
-toHtml = P.writeHtml P.def -- TODO: HTML5?
+toHtml = P.writeHtml P.def {writerHtml5 = True}
 
 isMarkdown :: FilePath -> Bool
 isMarkdown file = elem (takeExtension file) [".md", ".mdown", ".markdown"]
