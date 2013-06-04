@@ -21,10 +21,13 @@ import qualified Text.Blaze.Html5.Attributes as HA
 
 data Config = Config { configPort  :: Int
                      , configRoot  :: FilePath
-                     , configTitle :: Text
+                     , configTitle :: Text -- XXX: Remove?
                      } deriving (Show, Read)
 
+-- XXX: Configure Warp
+-- XXX: Add wai-static handler for serving statics
 -- XXX: Read from cmd line params
+-- XXX: Show more info about a post, date? Add home link in each post
 defaultConfig :: Config
 defaultConfig = Config 8000 "posts" "rlog"
 
@@ -69,13 +72,16 @@ renderPostName :: FilePath -> Blog H.Html
 renderPostName path = do
     text <- readPost path
     let post  = fromMarkdown text
-        title = maybe (titleFromFilename path) id (postTitle post)
+        title = postTitle path post
     return $ H.toHtml title
 
-postTitle :: Pandoc -> Maybe String
-postTitle (Pandoc (Meta t _ _ ) _) = case stringify t of
-                                       [] -> Nothing
-                                       s  -> Just s
+postTitle :: FilePath -> Pandoc -> String
+postTitle path post = maybe (titleFromFilename path) id (postTitle' post)
+
+postTitle' :: Pandoc -> Maybe String
+postTitle' (Pandoc (Meta t _ _ ) _) = case stringify t of
+                                        [] -> Nothing
+                                        s  -> Just s
 
 titleFromFilename :: FilePath -> String
 titleFromFilename file = foldr f [] $ (dropExtension . takeFileName) file
@@ -86,7 +92,17 @@ titleFromFilename file = foldr f [] $ (dropExtension . takeFileName) file
 renderPost :: FilePath -> Blog H.Html
 renderPost path = do
     text <- readPost path
-    return $ toHtml $ fromMarkdown text
+    let post    = fromMarkdown text
+        content = toHtml post
+        title   = postTitle path post
+    return $ H.docTypeHtml $ do
+        H.head $ do
+            H.title $ H.toHtml title
+        H.body $ do
+            H.h1 $ H.toHtml title
+            H.hr
+            content
+            H.hr
 
 readPost :: FilePath -> Blog String
 readPost path = do
