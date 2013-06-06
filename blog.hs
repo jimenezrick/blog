@@ -33,7 +33,7 @@ data Config = Config { configPort       :: Int
 -- XXX: Show more info about a post, date? Add home link in each post
 -- XXX: look in my web/r-log hakyll previous experiment
 defaultConfig :: Config
-defaultConfig = Config 8000 "posts" "rlog" "/static/style.css" ".md" P.readMarkdown
+defaultConfig = Config 8000 "posts" "/static/style.css" "rlog" ".md" P.readMarkdown
 
 type Blog = ReaderT Config IO
 
