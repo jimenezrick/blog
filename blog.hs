@@ -14,10 +14,11 @@ import Text.Pandoc.Shared            (stringify)
 import Text.Pandoc.Options           (writerHtml5)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 
-import qualified Text.Pandoc                 as P
-import qualified Web.Scotty                  as S
-import qualified Text.Blaze.Html5            as H
-import qualified Text.Blaze.Html5.Attributes as HA
+import qualified Text.Pandoc                   as P
+import qualified Web.Scotty                    as S
+import qualified Network.Wai.Middleware.Static as WS
+import qualified Text.Blaze.Html5              as H
+import qualified Text.Blaze.Html5.Attributes   as HA
 
 data Config = Config { configPort       :: Int
                      , configRoot       :: FilePath
@@ -28,12 +29,12 @@ data Config = Config { configPort       :: Int
                      }
 
 -- XXX: Configure Warp
--- XXX: Add wai-static handler for serving statics
 -- XXX: Read from cmd line params
 -- XXX: Show more info about a post, date? Add home link in each post
 -- XXX: look in my web/r-log hakyll previous experiment
+-- XXX: favicon
 defaultConfig :: Config
-defaultConfig = Config 8000 "posts" "/static/style.css" "rlog" ".md" P.readMarkdown
+defaultConfig = Config 8000 "." "/css/style.css" "rlog" ".md" P.readMarkdown
 
 type Blog = ReaderT Config IO
 
@@ -43,6 +44,8 @@ main :: IO ()
 main = do
     -- XXX: Handle exceptions from here
     S.scotty (configPort conf) $ do
+        -- XXX: middleware logStdoutDev
+        S.middleware $ WS.staticPolicy (WS.noDots WS.>-> WS.addBase staticPath)
         S.get "/blog" $ do
             index <- dispatch renderIndex
             render index
@@ -50,9 +53,22 @@ main = do
             path <- S.param "1"
             post <- dispatch $ renderPost (path ++ configPostExt conf)
             render post
-    where dispatch = liftIO . flip runReaderT conf
-          render   = S.html . renderHtml
-          conf     = defaultConfig
+        S.notFound $ do
+            error404 <- dispatch renderError404
+            render error404
+    where dispatch   = liftIO . flip runReaderT conf
+          render     = S.html . renderHtml
+          conf       = defaultConfig
+          staticPath = configRoot conf </> "static"
+
+renderError404 :: Blog H.Html
+renderError404 = do
+    cssPath <- reader configCss
+    return $ H.docTypeHtml $ do
+        renderHead cssPath msg
+        H.body $ do
+            H.h1 $ H.toHtml msg
+    where msg = "404: Nothing"
 
 renderHead :: FilePath -> Text -> H.Html
 renderHead path title =
