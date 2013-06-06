@@ -6,7 +6,7 @@ import Control.Monad.Reader
 import Control.Exception
 import System.IO.Error
 
-import Data.Text.Lazy                (Text)
+import Data.Text.Lazy                (Text, pack)
 import System.FilePath               ((</>), takeFileName, takeExtension, dropExtension)
 import System.Directory              (getDirectoryContents, doesDirectoryExist)
 import Text.Pandoc.Definition        (Pandoc(..), Meta(..))
@@ -21,7 +21,8 @@ import qualified Text.Blaze.Html5.Attributes as HA
 
 data Config = Config { configPort  :: Int
                      , configRoot  :: FilePath
-                     , configTitle :: Text -- XXX: Remove?
+                     , configTitle :: Text -- XXX: Configure title/intro in another place?
+                     , configCss   :: FilePath
                      } deriving (Show, Read)
 
 -- XXX: Configure Warp
@@ -30,7 +31,7 @@ data Config = Config { configPort  :: Int
 -- XXX: Show more info about a post, date? Add home link in each post
 -- XXX: look in my web/r-log hakyll previous experiment
 defaultConfig :: Config
-defaultConfig = Config 8000 "posts" "rlog"
+defaultConfig = Config 8000 "posts" "rlog" "/static/style.css"
 
 type Blog = ReaderT Config IO
 
@@ -48,24 +49,36 @@ main = do
     where dispatch = liftIO . flip runReaderT defaultConfig
           render   = S.html . renderHtml
 
+renderHead :: FilePath -> Text -> H.Html
+renderHead path title =
+    H.head $ do
+        utf8Charset
+        css path
+        H.title $ H.toHtml title
+
+utf8Charset :: H.Html
+utf8Charset = H.meta H.! HA.charset "utf-8"
+
+css :: FilePath -> H.Html
+css path = H.link
+           H.! HA.rel "stylesheet"
+           H.! HA.type_ "text/css"
+           H.! HA.href (H.toValue path)
+
 renderIndex :: Blog H.Html
 renderIndex = do
+    cssPath    <- reader configCss
     title      <- reader configTitle
     postPaths  <- liftM sort searchPosts
     postTitles <- mapM renderPostName postPaths
     return $ H.docTypeHtml $ do
-        H.head $ do
-            utf8Charset
-            H.title $ H.toHtml title
+        renderHead cssPath title
         H.body $ do
             H.h1 $ H.toHtml title
             H.hr
             H.ul $ do
                 mapM_ (H.li . uncurry postLink) (zip postPaths postTitles)
             H.hr
-
-utf8Charset :: H.Html
-utf8Charset = H.meta H.! HA.charset "utf-8"
 
 link :: FilePath -> H.Html -> H.Html
 link u t = H.a H.! HA.href (H.toValue u) $ t
@@ -96,14 +109,13 @@ titleFromFilename file = foldr f [] $ (dropExtension . takeFileName) file
 
 renderPost :: FilePath -> Blog H.Html
 renderPost path = do
-    text <- readPost path
+    cssPath <- reader configCss
+    text    <- readPost path
     let post    = fromMarkdown text
         content = toHtml post
-        title   = postTitle path post
+        title   = pack $ postTitle path post
     return $ H.docTypeHtml $ do
-        H.head $ do
-            utf8Charset
-            H.title $ H.toHtml title
+        renderHead cssPath title
         H.body $ do
             H.h1 $ H.toHtml title
             H.hr
