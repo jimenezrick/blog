@@ -1,10 +1,22 @@
+@font-face {
+	font-family: "Ropa Sans";
+	src: url("/font/RopaSans-Regular.ttf") format("truetype");
+}
+
+body {
+	width: 40em;
+	margin: auto;
+	font-family: "Ropa Sans", monospace;
+}
+
 h1 {
 	font-size: 5em;
+	text-align: center;
 }
 
 hr {
 	border: none;
-	height: 0.3em;
+	height: 0.2em;
 	color: black;
 	background-color: black;
 }
