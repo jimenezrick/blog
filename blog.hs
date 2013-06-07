@@ -33,7 +33,6 @@ data Config = Config { configPort       :: Int
 -- XXX: Read from cmd line params
 -- XXX: Show more info about a post, date? Add home link in each post
 -- XXX: look in my web/r-log hakyll previous experiment
--- XXX: Fix <hr/> height
 defaultConfig :: Config
 defaultConfig = Config 8000 "." "/css/style.css" "rlog" ".md" P.readMarkdown
 
