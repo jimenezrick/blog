@@ -14,11 +14,12 @@ import Text.Pandoc.Shared            (stringify)
 import Text.Pandoc.Options           (writerHtml5)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 
-import qualified Text.Pandoc                   as P
-import qualified Web.Scotty                    as S
-import qualified Network.Wai.Middleware.Static as WS
-import qualified Text.Blaze.Html5              as H
-import qualified Text.Blaze.Html5.Attributes   as HA
+import qualified Text.Pandoc                          as P
+import qualified Web.Scotty                           as S
+import qualified Network.Wai.Middleware.Static        as WS
+import qualified Network.Wai.Middleware.RequestLogger as WL
+import qualified Text.Blaze.Html5                     as H
+import qualified Text.Blaze.Html5.Attributes          as HA
 
 data Config = Config { configPort       :: Int
                      , configRoot       :: FilePath
@@ -32,6 +33,7 @@ data Config = Config { configPort       :: Int
 -- XXX: Read from cmd line params
 -- XXX: Show more info about a post, date? Add home link in each post
 -- XXX: look in my web/r-log hakyll previous experiment
+-- XXX: Fix <hr/> height
 defaultConfig :: Config
 defaultConfig = Config 8000 "." "/css/style.css" "rlog" ".md" P.readMarkdown
 
@@ -43,7 +45,7 @@ main :: IO ()
 main = do
     -- XXX: Handle exceptions from here
     S.scotty (configPort conf) $ do
-        -- XXX: middleware logStdoutDev
+        S.middleware WL.logStdout
         S.middleware $ WS.staticPolicy (WS.noDots WS.>-> WS.addBase staticPath)
         S.get "/blog" $ do
             index <- dispatch renderIndex
