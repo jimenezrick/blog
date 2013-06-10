@@ -34,8 +34,7 @@ data Config = Config { configPort       :: Int
 
 -- XXX: Configure Warp
 -- XXX: Read from cmd line params
--- XXX: Show more info about a post, date. Add home link in each post, contact email, author.
--- XXX: look in my web/r-log hakyll previous experiment
+-- XXX: Show more info about a post, date. Add home link in each post, contact email, author, about.
 defaultConfig :: Config
 defaultConfig = Config 8000 "." "/css/style.css" ".md" P.readMarkdown
 
@@ -90,6 +89,10 @@ css path = H.link
            H.! HA.type_ "text/css"
            H.! HA.href (H.toValue path)
 
+footer :: H.Html
+footer = H.div H.! HA.class_ "footer" $ author
+    where author = "Ricardo Catalinas Jiménez"
+
 renderIndex :: Blog H.Html
 renderIndex = do
     cssPath    <- reader configCss
@@ -103,6 +106,7 @@ renderIndex = do
             H.ul $ do
                 mapM_ (H.li . uncurry postLink) (zip postPaths postTitles)
             H.hr
+            footer
     where title = "rlog"
 
 link :: FilePath -> H.Html -> H.Html
@@ -146,6 +150,7 @@ renderPost path = do
             H.hr
             content
             H.hr
+            footer
 
 readPost :: FilePath -> Blog String
 readPost path = do

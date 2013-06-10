@@ -20,3 +20,13 @@ hr {
 	color: black;
 	background-color: black;
 }
+
+a {
+	color: black;
+	font-weight: bold;
+}
+
+div.footer {
+	float: right;
+	font-style: italic;
+}
