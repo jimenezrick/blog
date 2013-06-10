@@ -28,7 +28,6 @@ type PostParser = P.ReaderOptions -> String -> Pandoc
 data Config = Config { configPort       :: Int
                      , configRoot       :: FilePath
                      , configCss        :: FilePath
-                     , configTitle      :: Text -- XXX: Configure title/intro in another place?
                      , configPostExt    :: String
                      , configPostParser :: PostParser
                      }
@@ -38,7 +37,7 @@ data Config = Config { configPort       :: Int
 -- XXX: Show more info about a post, date. Add home link in each post, contact email, author.
 -- XXX: look in my web/r-log hakyll previous experiment
 defaultConfig :: Config
-defaultConfig = Config 8000 "." "/css/style.css" "rlog" ".md" P.readMarkdown
+defaultConfig = Config 8000 "." "/css/style.css" ".md" P.readMarkdown
 
 main :: IO ()
 main = do
@@ -94,7 +93,6 @@ css path = H.link
 renderIndex :: Blog H.Html
 renderIndex = do
     cssPath    <- reader configCss
-    title      <- reader configTitle
     postPaths  <- liftM sort searchPosts
     postTitles <- mapM renderPostName postPaths
     return $ H.docTypeHtml $ do
@@ -105,6 +103,7 @@ renderIndex = do
             H.ul $ do
                 mapM_ (H.li . uncurry postLink) (zip postPaths postTitles)
             H.hr
+    where title = "rlog"
 
 link :: FilePath -> H.Html -> H.Html
 link u t = H.a H.! HA.href (H.toValue u) $ t
