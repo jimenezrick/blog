@@ -20,6 +20,10 @@ import qualified Network.Wai.Middleware.Static as WS
 import qualified Text.Blaze.Html5              as H
 import qualified Text.Blaze.Html5.Attributes   as HA
 
+type Blog = ReaderT Config IO
+
+type PostParser = P.ReaderOptions -> String -> Pandoc
+
 data Config = Config { configPort       :: Int
                      , configRoot       :: FilePath
                      , configCss        :: FilePath
@@ -35,13 +39,10 @@ data Config = Config { configPort       :: Int
 defaultConfig :: Config
 defaultConfig = Config 8000 "." "/css/style.css" "rlog" ".md" P.readMarkdown
 
-type Blog = ReaderT Config IO
-
-type PostParser = P.ReaderOptions -> String -> Pandoc
-
 main :: IO ()
 main = do
     -- XXX: Handle exceptions from here
+    --      handle when a post it is not found -> 404
     S.scotty (configPort conf) $ do
         -- XXX: middleware logStdoutDev
         S.middleware $ WS.staticPolicy (WS.noDots WS.>-> WS.addBase staticPath)
