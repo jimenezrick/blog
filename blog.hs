@@ -35,15 +35,13 @@ data Config = Config { configPort       :: Int
 
 -- XXX: Configure Warp
 -- XXX: Read from cmd line params
--- XXX: Show more info about a post, date? Add home link in each post
+-- XXX: Show more info about a post, date. Add home link in each post, contact email, author.
 -- XXX: look in my web/r-log hakyll previous experiment
 defaultConfig :: Config
 defaultConfig = Config 8000 "." "/css/style.css" "rlog" ".md" P.readMarkdown
 
 main :: IO ()
 main = do
-    -- XXX: Handle exceptions from here
-    --      handle when a post it is not found -> 404
     S.scotty (configPort conf) $ do
         S.middleware WL.logStdout
         S.middleware $ WS.staticPolicy (WS.noDots WS.>-> WS.addBase staticPath)
@@ -57,10 +55,16 @@ main = do
         S.notFound $ do
             error404 <- dispatch renderError404
             render error404
-    where dispatch   = liftIO . flip runReaderT conf
-          render     = S.html . renderHtml
+    where dispatch   = liftIO . liftM eitherToMaybe . tryJust (guard . check) . runBlog
+          check e    = isDoesNotExistError e || isPermissionError e
+          runBlog    = flip runReaderT conf
+          render     = maybe S.next (S.html . renderHtml)
           conf       = defaultConfig
           staticPath = configRoot conf </> "static"
+
+eitherToMaybe :: Either a b -> Maybe b
+eitherToMaybe (Left _)  = Nothing
+eitherToMaybe (Right x) = Just x
 
 renderError404 :: Blog H.Html
 renderError404 = do
