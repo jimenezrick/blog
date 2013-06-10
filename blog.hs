@@ -14,11 +14,12 @@ import Text.Pandoc.Shared            (stringify)
 import Text.Pandoc.Options           (writerHtml5)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 
-import qualified Text.Pandoc                   as P
-import qualified Web.Scotty                    as S
-import qualified Network.Wai.Middleware.Static as WS
-import qualified Text.Blaze.Html5              as H
-import qualified Text.Blaze.Html5.Attributes   as HA
+import qualified Text.Pandoc                          as P
+import qualified Web.Scotty                           as S
+import qualified Network.Wai.Middleware.Static        as WS
+import qualified Network.Wai.Middleware.RequestLogger as WL
+import qualified Text.Blaze.Html5                     as H
+import qualified Text.Blaze.Html5.Attributes          as HA
 
 type Blog = ReaderT Config IO
 
@@ -44,7 +45,7 @@ main = do
     -- XXX: Handle exceptions from here
     --      handle when a post it is not found -> 404
     S.scotty (configPort conf) $ do
-        -- XXX: middleware logStdoutDev
+        S.middleware WL.logStdout
         S.middleware $ WS.staticPolicy (WS.noDots WS.>-> WS.addBase staticPath)
         S.get "/blog" $ do
             index <- dispatch renderIndex
