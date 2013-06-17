@@ -30,9 +30,9 @@ data Config = Config { configPort   :: Int
 
 -- XXX: Configure Warp: S.scottyOpts {verbose = 0} and Warp options
 -- XXX: Read from cmd line params
--- XXX: Show more info about a post, date. Add home link in each post, contact email, author, about (about.md), github link
+-- XXX: Show more info about a post, date. Add home link in each post, about (about.md)
 -- XXX: Sacar autor del post
--- XXX: Improve index style:
+-- XXX: Improve index CSS style:
 --        home/
 --        about/
 --        (on the right?)
@@ -40,7 +40,7 @@ defaultConfig :: Config
 defaultConfig = Config 8000 "." "markdown"
 
 formatError :: a
-formatError = error "post format not supported"
+formatError = error "Error: post format not supported"
 
 postExtension :: String -> String
 postExtension "markdown" = ".md"
