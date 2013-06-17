@@ -23,22 +23,30 @@ import qualified Text.Blaze.Html5.Attributes          as HA
 
 type Blog = ReaderT Config IO
 
-type PostParser = P.ReaderOptions -> String -> Pandoc
-
-data Config = Config { configPort       :: Int
-                     , configRoot       :: FilePath
-                     , configPostExt    :: String
-                     , configPostParser :: PostParser
+data Config = Config { configPort   :: Int
+                     , configRoot   :: FilePath
+                     , configFormat :: String
                      }
 
 -- XXX: Configure Warp: S.scottyOpts {verbose = 0} and Warp options
 -- XXX: Read from cmd line params
 -- XXX: Show more info about a post, date. Add home link in each post, contact email, author, about (about.md), github link
 -- XXX: Sacar autor del post
--- XXX: Improve index style
--- XXX: Parser en base a la extension, extraerlo de Pandoc, se puede?
+-- XXX: Improve index style:
+--        home/
+--        about/
+--        (on the right?)
 defaultConfig :: Config
-defaultConfig = Config 8000 "." ".md" P.readMarkdown
+defaultConfig = Config 8000 "." "markdown"
+
+formatError :: a
+formatError = error "post format not supported"
+
+postExtension :: String -> String
+postExtension "markdown" = ".md"
+postExtension "rst"      = ".rst"
+postExtension "textile"  = ".textile"
+postExtension _          = formatError
 
 main :: IO ()
 main = do
@@ -50,7 +58,7 @@ main = do
             render index
         S.get (S.regex "^/post/(.+)$") $ do
             path <- S.param "1"
-            post <- dispatch $ renderPost (path ++ configPostExt conf)
+            post <- dispatch $ renderPost (path ++ (postExtension $ configFormat conf))
             render post
         S.notFound $ do
             error404 <- dispatch renderError404
@@ -161,16 +169,17 @@ readPost path = do
 
 parsePost :: String -> Blog Pandoc
 parsePost text = do
-    parser <- reader configPostParser
-    return (parser P.def text)
+    format <- reader configFormat
+    maybe formatError (\p -> liftIO $ p P.def text) (lookup format P.readers)
 
 toHtml :: Pandoc -> H.Html
 toHtml = P.writeHtml P.def {writerHtml5 = True}
 
 searchPosts :: Blog [FilePath]
 searchPosts = do
-    root <- reader configRoot
-    ext  <- reader configPostExt
+    root   <- reader configRoot
+    format <- reader configFormat
+    let ext = postExtension format
     liftIO $ search ext (root </> "posts") "."
         where search ext root parent = do
                   files <- listDir (root </> parent)
