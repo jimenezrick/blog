@@ -36,7 +36,10 @@ data Config = Config { configPort       :: Int
 -- XXX: Read from cmd line params
 -- XXX: Show more info about a post, date. Add home link in each post, contact email, author, about (about.md), github link
 -- XXX: Footer: by Ricardo Catali.. email
--- XXX CSS: monospaced text with left solid line
+-- XXX CSS: monospaced text with left solid line and blue, links also blue
+-- XXX: Factor out CSS, not in config
+-- XXX: Sacar autor del post
+-- XXX: Quitar post de la url
 defaultConfig :: Config
 defaultConfig = Config 8000 "." "/css/style.css" ".md" P.readMarkdown
 
@@ -92,8 +95,12 @@ css path = H.link
            H.! HA.href (H.toValue path)
 
 footer :: H.Html
-footer = H.div H.! HA.class_ "footer" $ author
+footer = H.div H.! HA.id "footer" $ do
+    H.span H.! HA.class_ "author" $ author
+    H.a H.! HA.href github $ logo
     where author = "Ricardo Catalinas Jiménez"
+          github = "https://github.com/jimenezrick"
+          logo   = H.img H.! HA.class_ "link" H.! HA.src "/img/github.png"
 
 renderIndex :: Blog H.Html
 renderIndex = do
@@ -104,10 +111,8 @@ renderIndex = do
         renderHead cssPath title
         H.body $ do
             H.h1 $ H.toHtml title
-            H.hr
             H.ul $ do
                 mapM_ (H.li . uncurry postLink) (zip postPaths postTitles)
-            H.hr
             footer
     where title = "rlog"
 
@@ -149,9 +154,7 @@ renderPost path = do
         renderHead cssPath title
         H.body $ do
             H.h1 $ H.toHtml title
-            H.hr
             content
-            H.hr
             footer
 
 readPost :: FilePath -> Blog String
