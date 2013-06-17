@@ -1,5 +1,5 @@
 % Multi-line regexps: searching on plain text
-% Ricardo
+% Ricardo Catalinas Jiménez <jimenezrick@gmail.com>
 % Sat Jun  1 19:00:33 CEST 2013
 
 
@@ -14,14 +14,13 @@ of line.
 expressions](http://doc.cat-v.org/bell_labs/structural_regexps/) which
 precisely try to fix this and other issues.
 
-  So Vim to the rescue it is. GNU grep features *--perl-regexp* but the
-doc states that it is experimental. On Vim, we have the pattern **\_**
+  So Vim to the rescue it is. GNU grep features `--perl-regexp` but the
+doc states that it is experimental. On Vim, we have the pattern `\_`
 which extends any character set with the new-line. Thus with the
-whitespace character set *\s* we can search for a contiguos pair of
+whitespace character set `\s` we can search for a contiguos pair of
 words which could occur in different consecutive lines:
 
 	/hello\_s*world/
 
-
-“I define UNIX as 30 definitions of regular expressions living under one
-roof.” —Donald Knuth
+  “I define UNIX as 30 definitions of regular expressions living under
+one roof.” —Donald Knuth
