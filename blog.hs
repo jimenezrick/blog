@@ -35,8 +35,8 @@ data Config = Config { configPort       :: Int
 -- XXX: Read from cmd line params
 -- XXX: Show more info about a post, date. Add home link in each post, contact email, author, about (about.md), github link
 -- XXX: Sacar autor del post
--- XXX: Quitar post de la url
 -- XXX: Improve index style
+-- XXX: Parser en base a la extension, extraerlo de Pandoc, se puede?
 defaultConfig :: Config
 defaultConfig = Config 8000 "." ".md" P.readMarkdown
 
@@ -156,7 +156,7 @@ renderPost path = do
 readPost :: FilePath -> Blog String
 readPost path = do
     root <- reader configRoot
-    text <- liftIO $ readFile $ root </> path
+    text <- liftIO $ readFile $ root </> "posts" </> path
     return text
 
 parsePost :: String -> Blog Pandoc
@@ -171,7 +171,7 @@ searchPosts :: Blog [FilePath]
 searchPosts = do
     root <- reader configRoot
     ext  <- reader configPostExt
-    liftIO $ search ext root "."
+    liftIO $ search ext (root </> "posts") "."
         where search ext root parent = do
                   files <- listDir (root </> parent)
                   paths <- forM files $ \file -> do
