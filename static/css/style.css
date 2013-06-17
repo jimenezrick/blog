@@ -38,15 +38,12 @@ hr {
 }
 
 a {
+	color: #1569bc;
 	text-decoration: none;
 }
 
-a:link {
-	color: #1569bc;
-}
-
-a:visited {
-	color: #1569bc;
+a:hover {
+	opacity: 0.5;
 }
 
 div#footer {
@@ -54,11 +51,7 @@ div#footer {
 	float: right;
 }
 
-span.author {
+#footer a {
 	font-style: italic;
 	vertical-align: top;
-}
-
-img.link:hover {
-	opacity: 0.5;
 }

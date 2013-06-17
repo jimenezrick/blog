@@ -35,8 +35,6 @@ data Config = Config { configPort       :: Int
 -- XXX: Configure Warp: S.scottyOpts {verbose = 0} and Warp options
 -- XXX: Read from cmd line params
 -- XXX: Show more info about a post, date. Add home link in each post, contact email, author, about (about.md), github link
--- XXX: Footer: by Ricardo Catali.. email
--- XXX CSS: monospaced text with left solid line and blue, links also blue
 -- XXX: Factor out CSS, not in config
 -- XXX: Sacar autor del post
 -- XXX: Quitar post de la url
@@ -96,11 +94,12 @@ css path = H.link
 
 footer :: H.Html
 footer = H.div H.! HA.id "footer" $ do
-    H.span H.! HA.class_ "author" $ author
+    H.a H.! HA.href (H.toValue ("mailto:" ++ email :: String)) $ name
     H.a H.! HA.href github $ logo
-    where author = "Ricardo Catalinas Jiménez"
+    where name   = "Ricardo Catalinas Jiménez"
+          email  = "jimenezrick@gmail.com"
           github = "https://github.com/jimenezrick"
-          logo   = H.img H.! HA.class_ "link" H.! HA.src "/img/github.png"
+          logo   = H.img H.! HA.src "/img/github.png"
 
 renderIndex :: Blog H.Html
 renderIndex = do
