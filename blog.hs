@@ -27,7 +27,6 @@ type PostParser = P.ReaderOptions -> String -> Pandoc
 
 data Config = Config { configPort       :: Int
                      , configRoot       :: FilePath
-                     , configCss        :: FilePath
                      , configPostExt    :: String
                      , configPostParser :: PostParser
                      }
@@ -35,11 +34,11 @@ data Config = Config { configPort       :: Int
 -- XXX: Configure Warp: S.scottyOpts {verbose = 0} and Warp options
 -- XXX: Read from cmd line params
 -- XXX: Show more info about a post, date. Add home link in each post, contact email, author, about (about.md), github link
--- XXX: Factor out CSS, not in config
 -- XXX: Sacar autor del post
 -- XXX: Quitar post de la url
+-- XXX: Improve index style
 defaultConfig :: Config
-defaultConfig = Config 8000 "." "/css/style.css" ".md" P.readMarkdown
+defaultConfig = Config 8000 "." ".md" P.readMarkdown
 
 main :: IO ()
 main = do
@@ -69,45 +68,44 @@ eitherToMaybe (Right x) = Just x
 
 renderError404 :: Blog H.Html
 renderError404 = do
-    cssPath <- reader configCss
     return $ H.docTypeHtml $ do
-        renderHead cssPath msg
+        renderHead msg
         H.body $ do
             H.h1 $ H.toHtml msg
     where msg = "404: Nothing"
 
-renderHead :: FilePath -> Text -> H.Html
-renderHead path title =
+renderHead :: Text -> H.Html
+renderHead title =
     H.head $ do
         utf8Charset
-        css path
+        css
         H.title $ H.toHtml title
 
 utf8Charset :: H.Html
 utf8Charset = H.meta H.! HA.charset "utf-8"
 
-css :: FilePath -> H.Html
-css path = H.link
-           H.! HA.rel "stylesheet"
-           H.! HA.type_ "text/css"
-           H.! HA.href (H.toValue path)
+css :: H.Html
+css = H.link
+      H.! HA.rel "stylesheet"
+      H.! HA.type_ "text/css"
+      H.! HA.href path
+          where path = "/css/style.css"
 
 footer :: H.Html
 footer = H.div H.! HA.id "footer" $ do
     H.a H.! HA.href (H.toValue ("mailto:" ++ email :: String)) $ name
     H.a H.! HA.href github $ logo
-    where name   = "Ricardo Catalinas Jiménez"
-          email  = "jimenezrick@gmail.com"
-          github = "https://github.com/jimenezrick"
-          logo   = H.img H.! HA.src "/img/github.png"
+        where name   = "Ricardo Catalinas Jiménez"
+              email  = "jimenezrick@gmail.com"
+              github = "https://github.com/jimenezrick"
+              logo   = H.img H.! HA.src "/img/github.png"
 
 renderIndex :: Blog H.Html
 renderIndex = do
-    cssPath    <- reader configCss
     postPaths  <- liftM sort searchPosts
     postTitles <- mapM renderPostName postPaths
     return $ H.docTypeHtml $ do
-        renderHead cssPath title
+        renderHead title
         H.body $ do
             H.h1 $ H.toHtml title
             H.ul $ do
@@ -144,13 +142,12 @@ titleFromFilename file = foldr f [] $ (dropExtension . takeFileName) file
 
 renderPost :: FilePath -> Blog H.Html
 renderPost path = do
-    cssPath <- reader configCss
     text    <- readPost path
     post    <- parsePost text
     let content = toHtml post
         title   = pack $ postTitle path post
     return $ H.docTypeHtml $ do
-        renderHead cssPath title
+        renderHead title
         H.body $ do
             H.h1 $ H.toHtml title
             content
