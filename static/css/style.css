@@ -1,6 +1,6 @@
 @font-face {
 	font-family: "Ropa Sans";
-	src: url("/font/RopaSans-Regular.ttf") format("truetype");
+	src: url("/font/ropa-sans.ttf") format("truetype");
 }
 
 body {
@@ -10,23 +10,39 @@ body {
 }
 
 h1 {
-	font-size: 5em;
-	text-align: center;
+	margin: 1.5em auto;
+	font-size: 2em;
 }
 
 hr {
+	height: 1px;
 	border: none;
-	height: 3px;
 	color: black;
 	background-color: black;
 }
 
 a {
-	color: black;
-	font-weight: bold;
+	text-decoration: none;
 }
 
-div.footer {
+a:link {
+	color: #1569bc;
+}
+
+a:visited {
+	color: #1569bc;
+}
+
+div#footer {
+	margin: 1.5em auto;
 	float: right;
+}
+
+span.author {
 	font-style: italic;
+	vertical-align: top;
+}
+
+img.link:hover {
+	opacity: 0.7;
 }

@@ -32,9 +32,11 @@ data Config = Config { configPort       :: Int
                      , configPostParser :: PostParser
                      }
 
--- XXX: Configure Warp
+-- XXX: Configure Warp: S.scottyOpts {verbose = 0} and Warp options
 -- XXX: Read from cmd line params
--- XXX: Show more info about a post, date. Add home link in each post, contact email, author, about.
+-- XXX: Show more info about a post, date. Add home link in each post, contact email, author, about (about.md), github link
+-- XXX: Footer: by Ricardo Catali.. email
+-- XXX CSS: monospaced text with left solid line
 defaultConfig :: Config
 defaultConfig = Config 8000 "." "/css/style.css" ".md" P.readMarkdown
 
