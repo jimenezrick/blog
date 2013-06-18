@@ -187,11 +187,12 @@ readPost path = do
 parsePost :: String -> Blog Pandoc
 parsePost text = do
     format <- reader configFormat
-    maybe formatError (\p -> liftIO $ p P.def text) (lookup format P.readers)
+    maybe formatError (\p -> liftIO $ p opts text) (lookup format P.readers)
+        where exts = S.delete P.Ext_implicit_figures (P.readerExtensions P.def)
+              opts = P.def {P.readerExtensions = exts}
 
 toHtml :: Pandoc -> H.Html
-toHtml = P.writeHtml P.def {P.writerHtml5 = True, P.writerExtensions = exts}
-    where exts = S.delete P.Ext_implicit_figures (P.writerExtensions P.def)
+toHtml = P.writeHtml P.def {P.writerHtml5 = True}
 
 searchPosts :: Blog [FilePath]
 searchPosts = do
