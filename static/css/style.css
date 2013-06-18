@@ -51,6 +51,11 @@ a:hover {
 	font-size: 1.3em;
 }
 
+div#info {
+	color: #666666;
+	margin: 1em auto;
+}
+
 div#footer {
 	margin: 1.5em auto;
 	float: right;

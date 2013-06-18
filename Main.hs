@@ -3,6 +3,7 @@
 import Data.Char
 import Data.List
 import Data.Maybe
+import Data.Monoid
 import Control.Monad
 import Control.Monad.Reader
 import Control.Exception
@@ -30,9 +31,12 @@ data Config = Config { configPort   :: Int
                      , configFormat :: String
                      }
 
+-- XXX
+-- XXX
 -- XXX: Configure Warp: SC.scottyOpts {verbose = 0} and Warp options
 -- XXX: Read from cmd line params
--- XXX: Show post dates "Published on 18 June, 2013."
+-- XXX
+-- XXX
 defaultConfig :: Config
 defaultConfig = Config 8000 "." "markdown"
 
@@ -118,6 +122,11 @@ header title = H.div H.! HA.id "header" $ do
     space
     link "/about" "about/"
 
+info :: Maybe Text -> Maybe Text -> H.Html
+info date author = H.div H.! HA.id "info" $ do
+    maybe mempty (\d -> H.toHtml ("Published on " `mappend` d) >> H.br) date
+    maybe mempty (\a -> H.toHtml ("by " `mappend` a)) author
+
 footer :: H.Html
 footer = H.div H.! HA.id "footer" $ do
     link ("mailto:" ++ email) name
@@ -151,18 +160,17 @@ renderPostName :: FilePath -> Blog H.Html
 renderPostName path = do
     text <- readPost path
     post <- parsePost text
-    let title = postTitle path post
+    let (title, _, _) = postInfo path post
     return $ H.toHtml title
 
-postTitle :: FilePath -> Pandoc -> String
-postTitle path post = fromMaybe (titleFromFilename path) title
-    where (title, _, _) = postInfo post
-
-postInfo :: Pandoc -> (Maybe String, Maybe String, Maybe String)
-postInfo (Pandoc (Meta t as d) _) = (f t, as', f d)
+postInfo :: FilePath -> Pandoc -> (Text, Maybe Text, Maybe Text)
+postInfo path (Pandoc (Meta t as d) _) = (t', a, f d)
     where f [] = Nothing
-          f x  = Just (stringify x)
-          as'  = guard (not $ null as) >> liftM (intercalate ", ") (sequence $ map f as)
+          f x  = Just (pack $ stringify x)
+          a    = case as of
+                   [] -> Nothing
+                   _  -> f (head as)
+          t'   = fromMaybe (pack $ titleFromFilename path) (f t)
 
 titleFromFilename :: FilePath -> String
 titleFromFilename file = foldr f [] $ (cap . dropExtension . takeFileName) file
@@ -174,15 +182,16 @@ titleFromFilename file = foldr f [] $ (cap . dropExtension . takeFileName) file
 
 renderPost :: FilePath -> Blog H.Html
 renderPost path = do
-    text    <- readPost path
-    post    <- parsePost text
-    let content = toHtml post
-        title   = pack $ postTitle path post
+    text <- readPost path
+    post <- parsePost text
+    let content               = toHtml post
+        (title, author, date) = postInfo path post
     return $ H.docTypeHtml $ do
         head_ title
         H.body $
             H.div H.! HA.id "post" $ do
                 header title
+                info date author
                 content
                 footer
 
