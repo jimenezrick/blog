@@ -52,7 +52,8 @@ main :: IO ()
 main = do
     S.scotty (configPort conf) $ do
         S.middleware WL.logStdout
-        S.middleware $ WS.staticPolicy (WS.noDots WS.>-> WS.addBase staticPath)
+        S.middleware $ WS.staticPolicy $ WS.noDots WS.>-> WS.addBase staticPath
+        S.middleware $ WS.staticPolicy $ WS.noDots WS.>-> WS.hasPrefix "posts/" WS.>-> WS.addBase root
         S.get "/blog" $ do
             index <- dispatch renderIndex
             render index
@@ -68,7 +69,8 @@ main = do
           runBlog    = flip runReaderT conf
           render     = maybe S.next (S.html . renderHtml)
           conf       = defaultConfig
-          staticPath = configRoot conf </> "static"
+          root       = configRoot conf
+          staticPath = root </> "static"
 
 eitherToMaybe :: Either a b -> Maybe b
 eitherToMaybe (Left _)  = Nothing
