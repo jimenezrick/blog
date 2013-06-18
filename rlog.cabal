@@ -12,6 +12,7 @@ executable rlog
   build-depends:     base                  == 4.6.*,
                      text                  == 0.11.*,
                      mtl                   == 2.1.*,
+                     containers            == 0.5.*,
                      filepath              == 1.3.*,
                      directory             == 1.2.*,
                      pandoc                == 1.11.*,

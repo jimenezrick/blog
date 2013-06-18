@@ -12,11 +12,11 @@ import System.FilePath               ((</>), takeFileName, takeExtension, dropEx
 import System.Directory              (getDirectoryContents, doesDirectoryExist)
 import Text.Pandoc.Definition        (Pandoc(..), Meta(..))
 import Text.Pandoc.Shared            (stringify)
-import Text.Pandoc.Options           (writerHtml5)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 
+import qualified Data.Set                             as S
 import qualified Text.Pandoc                          as P
-import qualified Web.Scotty                           as S
+import qualified Web.Scotty                           as SC
 import qualified Network.Wai.Middleware.Static        as WS
 import qualified Network.Wai.Middleware.RequestLogger as WL
 import qualified Text.Blaze.Html5                     as H
@@ -29,7 +29,7 @@ data Config = Config { configPort   :: Int
                      , configFormat :: String
                      }
 
--- XXX: Configure Warp: S.scottyOpts {verbose = 0} and Warp options
+-- XXX: Configure Warp: SC.scottyOpts {verbose = 0} and Warp options
 -- XXX: Read from cmd line params
 -- XXX: Show post dates
 -- XXX: Improve index:
@@ -50,24 +50,24 @@ postExtension _          = formatError
 
 main :: IO ()
 main = do
-    S.scotty (configPort conf) $ do
-        S.middleware WL.logStdout
-        S.middleware $ WS.staticPolicy $ WS.noDots WS.>-> WS.addBase staticPath
-        S.middleware $ WS.staticPolicy $ WS.noDots WS.>-> WS.hasPrefix "posts/" WS.>-> WS.addBase root
-        S.get "/blog" $ do
+    SC.scotty (configPort conf) $ do
+        SC.middleware WL.logStdout
+        SC.middleware $ WS.staticPolicy $ WS.noDots WS.>-> WS.addBase staticPath
+        SC.middleware $ WS.staticPolicy $ WS.noDots WS.>-> WS.hasPrefix "posts/" WS.>-> WS.addBase root
+        SC.get "/blog" $ do
             index <- dispatch renderIndex
             render index
-        S.get (S.regex "^/post/(.+)$") $ do
-            path <- S.param "1"
+        SC.get (SC.regex "^/post/(.+)$") $ do
+            path <- SC.param "1"
             post <- dispatch $ renderPost (path ++ (postExtension $ configFormat conf))
             render post
-        S.notFound $ do
+        SC.notFound $ do
             error404 <- dispatch renderError404
             render error404
     where dispatch   = liftIO . liftM eitherToMaybe . tryJust (guard . check) . runBlog
           check e    = isDoesNotExistError e || isPermissionError e
           runBlog    = flip runReaderT conf
-          render     = maybe S.next (S.html . renderHtml)
+          render     = maybe SC.next (SC.html . renderHtml)
           conf       = defaultConfig
           root       = configRoot conf
           staticPath = root </> "static"
@@ -177,7 +177,8 @@ parsePost text = do
     maybe formatError (\p -> liftIO $ p P.def text) (lookup format P.readers)
 
 toHtml :: Pandoc -> H.Html
-toHtml = P.writeHtml P.def {writerHtml5 = True}
+toHtml = P.writeHtml P.def {P.writerHtml5 = True, P.writerExtensions = exts}
+    where exts = S.delete P.Ext_implicit_figures (P.writerExtensions P.def)
 
 searchPosts :: Blog [FilePath]
 searchPosts = do
