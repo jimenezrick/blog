@@ -31,11 +31,10 @@ data Config = Config { configPort   :: Int
 
 -- XXX: Configure Warp: S.scottyOpts {verbose = 0} and Warp options
 -- XXX: Read from cmd line params
--- XXX: Show more info about a post, date. Add home link in each post, about (about.md)
--- XXX: Sacar autor del post
--- XXX: Improve index CSS style:
+-- XXX: Show post dates
+-- XXX: Improve index:
 --        home/
---        about/
+--        about/ (about.md)
 --        (on the right?)
 defaultConfig :: Config
 defaultConfig = Config 8000 "." "markdown"
