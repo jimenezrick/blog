@@ -28,6 +28,7 @@ data Config = Config { configPort   :: Int
                      , configFormat :: String
                      }
 
+-- XXX: Cabal file and README
 -- XXX: Configure Warp: S.scottyOpts {verbose = 0} and Warp options
 -- XXX: Read from cmd line params
 -- XXX: Show more info about a post, date. Add home link in each post, about (about.md)
