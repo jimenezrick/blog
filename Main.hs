@@ -2,6 +2,7 @@
 
 import Data.Char
 import Data.List
+import Data.Maybe
 import Control.Monad
 import Control.Monad.Reader
 import Control.Exception
@@ -77,11 +78,11 @@ eitherToMaybe (Left _)  = Nothing
 eitherToMaybe (Right x) = Just x
 
 renderError404 :: Blog H.Html
-renderError404 = do
+renderError404 =
     return $ H.docTypeHtml $ do
         head_ msg
-        H.body $ do
-            H.div H.! HA.id "error404" $ do
+        H.body $
+            H.div H.! HA.id "error404" $
                 H.h1 $ H.toHtml msg
     where msg = "404: Nothing"
 
@@ -127,10 +128,10 @@ renderIndex = do
     postTitles <- mapM renderPostName postPaths
     return $ H.docTypeHtml $ do
         head_ title
-        H.body $ do
+        H.body $
             H.div H.! HA.id "index" $ do
                 header title
-                H.ul $ do
+                H.ul $
                     mapM_ (H.li . uncurry postLink) (zip postPaths postTitles)
                 footer
     where title = "rlog"
@@ -149,7 +150,7 @@ renderPostName path = do
     return $ H.toHtml title
 
 postTitle :: FilePath -> Pandoc -> String
-postTitle path post = maybe (titleFromFilename path) id (postTitle' post)
+postTitle path post = fromMaybe (titleFromFilename path) (postTitle' post)
 
 postTitle' :: Pandoc -> Maybe String
 postTitle' (Pandoc (Meta t _ _ ) _) = case stringify t of
@@ -172,7 +173,7 @@ renderPost path = do
         title   = pack $ postTitle path post
     return $ H.docTypeHtml $ do
         head_ title
-        H.body $ do
+        H.body $
             H.div H.! HA.id "post" $ do
                 header title
                 content
@@ -181,8 +182,7 @@ renderPost path = do
 readPost :: FilePath -> Blog String
 readPost path = do
     root <- reader configRoot
-    text <- liftIO $ readFile $ root </> "posts" </> path
-    return text
+    liftIO $ readFile $ root </> "posts" </> path
 
 parsePost :: String -> Blog Pandoc
 parsePost text = do
