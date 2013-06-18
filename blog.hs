@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import Data.Char
 import Data.List
 import Control.Monad
 import Control.Monad.Reader
@@ -145,10 +146,12 @@ postTitle' (Pandoc (Meta t _ _ ) _) = case stringify t of
                                         s  -> Just s
 
 titleFromFilename :: FilePath -> String
-titleFromFilename file = foldr f [] $ (dropExtension . takeFileName) file
-    where f '-' cs = ' ':cs
-          f '_' cs = ' ':cs
-          f c   cs = c:cs
+titleFromFilename file = foldr f [] $ (cap . dropExtension . takeFileName) file
+    where f '-' cs   = ' ':cs
+          f '_' cs   = ' ':cs
+          f c   cs   = c:cs
+          cap (c:cs) = toUpper c:cs
+          cap []     = []
 
 renderPost :: FilePath -> Blog H.Html
 renderPost path = do
