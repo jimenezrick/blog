@@ -29,7 +29,6 @@ data Config = Config { configPort   :: Int
                      , configFormat :: String
                      }
 
--- XXX: Cabal file and README
 -- XXX: Configure Warp: S.scottyOpts {verbose = 0} and Warp options
 -- XXX: Read from cmd line params
 -- XXX: Show post dates
