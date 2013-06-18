@@ -47,6 +47,10 @@ a:hover {
 	opacity: 0.5;
 }
 
+#index ul {
+	font-size: 1.3em;
+}
+
 div#footer {
 	margin: 1.5em auto;
 	float: right;

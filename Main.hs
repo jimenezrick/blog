@@ -31,7 +31,7 @@ data Config = Config { configPort   :: Int
 
 -- XXX: Configure Warp: SC.scottyOpts {verbose = 0} and Warp options
 -- XXX: Read from cmd line params
--- XXX: Show post dates
+-- XXX: Show post dates "Published on 18 June, 2013."
 defaultConfig :: Config
 defaultConfig = Config 8000 "." "markdown"
 
@@ -81,7 +81,8 @@ renderError404 = do
     return $ H.docTypeHtml $ do
         head_ msg
         H.body $ do
-            H.h1 $ H.toHtml msg
+            H.div H.! HA.id "error404" $ do
+                H.h1 $ H.toHtml msg
     where msg = "404: Nothing"
 
 head_ :: Text -> H.Html
@@ -105,12 +106,11 @@ space :: H.Html
 space = " "
 
 header :: Text -> H.Html
-header title = do
+header title = H.div H.! HA.id "header" $ do
     H.h1 $ H.toHtml title
-    H.div H.! HA.id "header" $ do
-        link "/blog" "home/"
-        space
-        link "/about" "about/"
+    link "/blog" "home/"
+    space
+    link "/about" "about/"
 
 footer :: H.Html
 footer = H.div H.! HA.id "footer" $ do
@@ -128,10 +128,11 @@ renderIndex = do
     return $ H.docTypeHtml $ do
         head_ title
         H.body $ do
-            header title
-            H.ul $ do
-                mapM_ (H.li . uncurry postLink) (zip postPaths postTitles)
-            footer
+            H.div H.! HA.id "index" $ do
+                header title
+                H.ul $ do
+                    mapM_ (H.li . uncurry postLink) (zip postPaths postTitles)
+                footer
     where title = "rlog"
 
 link :: FilePath -> H.Html -> H.Html
@@ -172,9 +173,10 @@ renderPost path = do
     return $ H.docTypeHtml $ do
         head_ title
         H.body $ do
-            header title
-            content
-            footer
+            H.div H.! HA.id "post" $ do
+                header title
+                content
+                footer
 
 readPost :: FilePath -> Blog String
 readPost path = do
