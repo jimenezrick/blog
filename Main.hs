@@ -32,10 +32,6 @@ data Config = Config { configPort   :: Int
 -- XXX: Configure Warp: SC.scottyOpts {verbose = 0} and Warp options
 -- XXX: Read from cmd line params
 -- XXX: Show post dates
--- XXX: Improve index:
---        home/
---        about/ (about.md)
---        (on the right?)
 defaultConfig :: Config
 defaultConfig = Config 8000 "." "markdown"
 
@@ -57,10 +53,13 @@ main = do
         SC.get "/blog" $ do
             index <- dispatch renderIndex
             render index
-        SC.get (SC.regex "^/post/(.+)$") $ do
+        SC.get (SC.regex "/post/(.+)") $ do
             path <- SC.param "1"
-            post <- dispatch $ renderPost (path ++ (postExtension $ configFormat conf))
+            post <- dispatch $ renderPost (path ++ ext)
             render post
+        SC.get "/about" $ do
+            about <- dispatch $ renderPost ("../about" ++ ext)
+            render about
         SC.notFound $ do
             error404 <- dispatch renderError404
             render error404
@@ -71,6 +70,7 @@ main = do
           conf       = defaultConfig
           root       = configRoot conf
           staticPath = root </> "static"
+          ext        = postExtension (configFormat conf)
 
 eitherToMaybe :: Either a b -> Maybe b
 eitherToMaybe (Left _)  = Nothing
@@ -79,13 +79,13 @@ eitherToMaybe (Right x) = Just x
 renderError404 :: Blog H.Html
 renderError404 = do
     return $ H.docTypeHtml $ do
-        renderHead msg
+        head_ msg
         H.body $ do
             H.h1 $ H.toHtml msg
     where msg = "404: Nothing"
 
-renderHead :: Text -> H.Html
-renderHead title =
+head_ :: Text -> H.Html
+head_ title =
     H.head $ do
         utf8Charset
         css
@@ -101,10 +101,21 @@ css = H.link
       H.! HA.href path
           where path = "/css/style.css"
 
+space :: H.Html
+space = " "
+
+header :: Text -> H.Html
+header title = do
+    H.h1 $ H.toHtml title
+    H.div H.! HA.id "header" $ do
+        link "/blog" "home/"
+        space
+        link "/about" "about/"
+
 footer :: H.Html
 footer = H.div H.! HA.id "footer" $ do
-    H.a H.! HA.href (H.toValue ("mailto:" ++ email :: String)) $ name
-    H.a H.! HA.href github $ logo
+    link ("mailto:" ++ email) name
+    link github logo
         where name   = "Ricardo Catalinas Jiménez"
               email  = "jimenezrick@gmail.com"
               github = "https://github.com/jimenezrick"
@@ -115,16 +126,16 @@ renderIndex = do
     postPaths  <- liftM sort searchPosts
     postTitles <- mapM renderPostName postPaths
     return $ H.docTypeHtml $ do
-        renderHead title
+        head_ title
         H.body $ do
-            H.h1 $ H.toHtml title
+            header title
             H.ul $ do
                 mapM_ (H.li . uncurry postLink) (zip postPaths postTitles)
             footer
     where title = "rlog"
 
 link :: FilePath -> H.Html -> H.Html
-link u t = H.a H.! HA.href (H.toValue u) $ t
+link u = H.a H.! HA.href (H.toValue u)
 
 postLink :: FilePath -> H.Html -> H.Html
 postLink = link . ("post" </>) . dropExtension
@@ -159,9 +170,9 @@ renderPost path = do
     let content = toHtml post
         title   = pack $ postTitle path post
     return $ H.docTypeHtml $ do
-        renderHead title
+        head_ title
         H.body $ do
-            H.h1 $ H.toHtml title
+            header title
             content
             footer
 
