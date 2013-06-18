@@ -51,6 +51,9 @@ main = do
         SC.middleware WL.logStdout
         SC.middleware $ WS.staticPolicy $ WS.noDots WS.>-> WS.addBase staticPath
         SC.middleware $ WS.staticPolicy $ WS.noDots WS.>-> WS.hasPrefix "posts/" WS.>-> WS.addBase root
+        SC.get "/" $ do
+            home <- dispatch $ renderPost ("../home" ++ ext)
+            render home
         SC.get "/blog" $ do
             index <- dispatch renderIndex
             render index
@@ -109,7 +112,9 @@ space = " "
 header :: Text -> H.Html
 header title = H.div H.! HA.id "header" $ do
     H.h1 $ H.toHtml title
-    link "/blog" "home/"
+    link "/" "home/"
+    space
+    link "/blog" "blog/"
     space
     link "/about" "about/"
 
@@ -150,12 +155,14 @@ renderPostName path = do
     return $ H.toHtml title
 
 postTitle :: FilePath -> Pandoc -> String
-postTitle path post = fromMaybe (titleFromFilename path) (postTitle' post)
+postTitle path post = fromMaybe (titleFromFilename path) title
+    where (title, _, _) = postInfo post
 
-postTitle' :: Pandoc -> Maybe String
-postTitle' (Pandoc (Meta t _ _ ) _) = case stringify t of
-                                        [] -> Nothing
-                                        s  -> Just s
+postInfo :: Pandoc -> (Maybe String, Maybe String, Maybe String)
+postInfo (Pandoc (Meta t as d) _) = (f t, as', f d)
+    where f [] = Nothing
+          f x  = Just (stringify x)
+          as'  = guard (not $ null as) >> liftM (intercalate ", ") (sequence $ map f as)
 
 titleFromFilename :: FilePath -> String
 titleFromFilename file = foldr f [] $ (cap . dropExtension . takeFileName) file
