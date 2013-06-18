@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import Data.Char
 import Data.List
 import Control.Monad
 import Control.Monad.Reader
@@ -31,11 +32,10 @@ data Config = Config { configPort   :: Int
 -- XXX: Cabal file and README
 -- XXX: Configure Warp: S.scottyOpts {verbose = 0} and Warp options
 -- XXX: Read from cmd line params
--- XXX: Show more info about a post, date. Add home link in each post, about (about.md)
--- XXX: Sacar autor del post
--- XXX: Improve index CSS style:
+-- XXX: Show post dates
+-- XXX: Improve index:
 --        home/
---        about/
+--        about/ (about.md)
 --        (on the right?)
 defaultConfig :: Config
 defaultConfig = Config 8000 "." "markdown"
@@ -53,7 +53,8 @@ main :: IO ()
 main = do
     S.scotty (configPort conf) $ do
         S.middleware WL.logStdout
-        S.middleware $ WS.staticPolicy (WS.noDots WS.>-> WS.addBase staticPath)
+        S.middleware $ WS.staticPolicy $ WS.noDots WS.>-> WS.addBase staticPath
+        S.middleware $ WS.staticPolicy $ WS.noDots WS.>-> WS.hasPrefix "posts/" WS.>-> WS.addBase root
         S.get "/blog" $ do
             index <- dispatch renderIndex
             render index
@@ -69,7 +70,8 @@ main = do
           runBlog    = flip runReaderT conf
           render     = maybe S.next (S.html . renderHtml)
           conf       = defaultConfig
-          staticPath = configRoot conf </> "static"
+          root       = configRoot conf
+          staticPath = root </> "static"
 
 eitherToMaybe :: Either a b -> Maybe b
 eitherToMaybe (Left _)  = Nothing
@@ -144,10 +146,12 @@ postTitle' (Pandoc (Meta t _ _ ) _) = case stringify t of
                                         s  -> Just s
 
 titleFromFilename :: FilePath -> String
-titleFromFilename file = foldr f [] $ (dropExtension . takeFileName) file
-    where f '-' cs = ' ':cs
-          f '_' cs = ' ':cs
-          f c   cs = c:cs
+titleFromFilename file = foldr f [] $ (cap . dropExtension . takeFileName) file
+    where f '-' cs   = ' ':cs
+          f '_' cs   = ' ':cs
+          f c   cs   = c:cs
+          cap (c:cs) = toUpper c:cs
+          cap []     = []
 
 renderPost :: FilePath -> Blog H.Html
 renderPost path = do
