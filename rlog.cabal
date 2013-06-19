@@ -7,8 +7,14 @@ category:            Web
 build-type:          Simple
 cabal-version:       >= 1.8
 
+Flag Static
+  Default:           False
+
 executable rlog
-  ghc-options:       -Wall
+  if flag(Static)
+    ghc-options:     -Wall -O2 -static -optc-static -optl-static -optl-pthread
+  else
+    ghc-options:     -Wall -O2
   main-is:           Main.hs
   build-depends:     base                  == 4.6.*,
                      text                  == 0.11.*,
