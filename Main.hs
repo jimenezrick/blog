@@ -29,6 +29,10 @@ type Blog = ReaderT Config IO
 data Config = Config { configPort   :: Int
                      , configRoot   :: FilePath
                      , configFormat :: String
+                     , configTitle  :: Text
+                     , configName   :: Text
+                     , configEmail  :: String
+                     , configGitHub :: String
                      }
 
 -- XXX
@@ -38,7 +42,14 @@ data Config = Config { configPort   :: Int
 -- XXX
 -- XXX
 defaultConfig :: Config
-defaultConfig = Config 8000 "." "markdown"
+defaultConfig = Config { configPort   = 8000
+                       , configRoot   = "."
+                       , configFormat = "markdown"
+                       , configTitle  = "rlog"
+                       , configName   = "Ricardo Catalinas Jiménez"
+                       , configEmail  = "jimenezrick@gmail.com"
+                       , configGitHub = "https://github.com/jimenezrick"
+                       }
 
 formatError :: a
 formatError = error "Error: post format not supported"
@@ -115,7 +126,7 @@ space = " "
 
 header :: Text -> H.Html
 header title = H.div H.! HA.id "header" $ do
-    H.h1 $ H.toHtml title
+    H.h1 (H.toHtml title)
     link "/" "home/"
     space
     link "/blog" "blog/"
@@ -127,17 +138,18 @@ info date author = H.div H.! HA.id "info" $ do
     maybe mempty (\d -> H.toHtml ("Published on " `mappend` d) >> H.br) date
     maybe mempty (\a -> H.toHtml ("by " `mappend` a)) author
 
-footer :: H.Html
-footer = H.div H.! HA.id "footer" $ do
-    link ("mailto:" ++ email) name
+footer :: Text -> String -> String -> H.Html
+footer name email github = H.div H.! HA.id "footer" $ do
+    link ("mailto:" ++ email) (H.toHtml name)
     link github logo
-        where name   = "Ricardo Catalinas Jiménez"
-              email  = "jimenezrick@gmail.com"
-              github = "https://github.com/jimenezrick"
-              logo   = H.img H.! HA.src "/img/github.png"
+        where logo = H.img H.! HA.src "/img/github.png"
 
 renderIndex :: Blog H.Html
 renderIndex = do
+    title      <- reader configTitle
+    name       <- reader configName
+    email      <- reader configEmail
+    github     <- reader configGitHub
     postPaths  <- liftM sort searchPosts
     postTitles <- mapM renderPostName postPaths
     return $ H.docTypeHtml $ do
@@ -147,8 +159,7 @@ renderIndex = do
                 header title
                 H.ul $
                     mapM_ (H.li . uncurry postLink) (zip postPaths postTitles)
-                footer
-    where title = "rlog"
+                footer name email github
 
 link :: FilePath -> H.Html -> H.Html
 link u = H.a H.! HA.href (H.toValue u)
@@ -182,8 +193,11 @@ titleFromFilename file = foldr f [] $ (cap . dropExtension . takeFileName) file
 
 renderPost :: FilePath -> Blog H.Html
 renderPost path = do
-    text <- readPost path
-    post <- parsePost text
+    name   <- reader configName
+    email  <- reader configEmail
+    github <- reader configGitHub
+    text   <- readPost path
+    post   <- parsePost text
     let content               = toHtml post
         (title, author, date) = postInfo path post
     return $ H.docTypeHtml $ do
@@ -193,7 +207,7 @@ renderPost path = do
                 header title
                 info date author
                 content
-                footer
+                footer name email github
 
 readPost :: FilePath -> Blog String
 readPost path = do
