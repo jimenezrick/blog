@@ -12,9 +12,10 @@ Flag Static
 
 executable rlog
   if flag(Static)
-    ghc-options:     -Wall -O2 -static -optc-static -optl-static -optl-pthread
+    ghc-options:     -Wall -O2 -threaded -rtsopts -static
+                     -optc-static -optl-static -optl-pthread
   else
-    ghc-options:     -Wall -O2
+    ghc-options:     -Wall -O2 -threaded -rtsopts
   main-is:           Main.hs
   build-depends:     base                  == 4.6.*,
                      text                  == 0.11.*,
