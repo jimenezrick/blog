@@ -42,7 +42,7 @@ data Config = Config { configPort   :: Int
 -- XXX
 -- XXX
 defaultConfig :: Config
-defaultConfig = Config { configPort   = 8000
+defaultConfig = Config { configPort   = 2000
                        , configRoot   = "."
                        , configFormat = "markdown"
                        , configTitle  = "rlog"
