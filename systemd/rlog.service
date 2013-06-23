@@ -1,5 +1,5 @@
 # TODO: Add command line params and conf file
-# TODO: Stdout to syslog?
+# TODO: Use syslog from rlog?
 
 [Unit]
 Description=Blog Server
@@ -11,6 +11,8 @@ Type=simple
 Restart=on-abort
 ExecStart=/srv/rlog/rlog
 User=http
+# FIXME: Use conf file
+WorkingDirectory=/srv/rlog
 
 [Install]
 WantedBy=multi-user.target
