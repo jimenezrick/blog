@@ -20,7 +20,6 @@ import Text.Blaze.Html.Renderer.Text (renderHtml)
 import qualified Data.Set                             as S
 import qualified Text.Pandoc                          as P
 import qualified Web.Scotty                           as SC
-import qualified Network.Wai.Handler.Warp             as WW
 import qualified Network.Wai.Middleware.Static        as WS
 import qualified Network.Wai.Middleware.RequestLogger as WL
 import qualified Text.Blaze.Html5                     as H
@@ -37,7 +36,6 @@ data Config = Config { configPort   :: Int
                      , configGitHub :: String
                      }
 
--- XXX: Read from cmd line params
 defaultConfig :: Config
 defaultConfig = Config { configPort   = 2000
                        , configRoot   = "."
@@ -59,7 +57,7 @@ postExtension _          = formatError
 
 main :: IO ()
 main = do
-    SC.scottyOpts opts $ do
+    SC.scotty port $ do
         SC.middleware WL.logStdout
         staticDispatch "static/" root
         staticDispatch "posts/" root
@@ -87,8 +85,6 @@ main = do
           conf     = defaultConfig
           root     = configRoot conf
           port     = configPort conf
-          opts     = def {SC.verbose  = 0,
-                          SC.settings = WW.defaultSettings {WW.settingsPort = port}}
 
 staticDispatch :: String -> String -> SC.ScottyM ()
 staticDispatch prefix root =

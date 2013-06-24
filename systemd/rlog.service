@@ -1,5 +1,3 @@
-# TODO: Add command line params and conf file
-
 [Unit]
 Description=Blog Server
 Wants=network.target
@@ -7,11 +5,10 @@ After=network.target
 
 [Service]
 Type=simple
-Restart=on-abort
 ExecStart=/srv/rlog/rlog
-User=http
-# FIXME: Use conf file
 WorkingDirectory=/srv/rlog
+Restart=on-abort
+User=http
 
 [Install]
 WantedBy=multi-user.target
