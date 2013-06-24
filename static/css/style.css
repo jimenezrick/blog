@@ -1,6 +1,6 @@
 @font-face {
 	font-family: "Ropa Sans";
-	src: url("/font/ropa-sans.ttf") format("truetype");
+	src: url("/static/font/ropa-sans.ttf") format("truetype");
 }
 
 body {
