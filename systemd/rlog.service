@@ -1,5 +1,4 @@
 # TODO: Add command line params and conf file
-# TODO: Use syslog from rlog?
 
 [Unit]
 Description=Blog Server
