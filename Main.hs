@@ -64,8 +64,8 @@ main :: IO ()
 main = do
     SC.scotty (configPort conf) $ do
         SC.middleware WL.logStdout
-        SC.middleware $ WS.staticPolicy $ WS.noDots WS.>-> WS.addBase staticPath
-        SC.middleware $ WS.staticPolicy $ WS.noDots WS.>-> WS.hasPrefix "posts/" WS.>-> WS.addBase root
+        staticDispatch "static/" root
+        staticDispatch "posts/" root
         SC.get "/" $ do
             home <- dispatch $ renderPost ("../home" ++ ext)
             render home
@@ -82,14 +82,19 @@ main = do
         SC.notFound $ do
             error404 <- dispatch renderError404
             render error404
-    where dispatch   = liftIO . liftM eitherToMaybe . tryJust (guard . check) . runBlog
-          check e    = isDoesNotExistError e || isPermissionError e
-          runBlog    = flip runReaderT conf
-          render     = maybe SC.next (SC.html . renderHtml)
-          conf       = defaultConfig
-          root       = configRoot conf
-          staticPath = root </> "static"
-          ext        = postExtension (configFormat conf)
+    where dispatch = liftIO . liftM eitherToMaybe . tryJust (guard . check) . runBlog
+          check e  = isDoesNotExistError e || isPermissionError e
+          runBlog  = flip runReaderT conf
+          render   = maybe SC.next (SC.html . renderHtml)
+          conf     = defaultConfig
+          root     = configRoot conf
+          ext      = postExtension (configFormat conf)
+
+staticDispatch :: String -> String -> SC.ScottyM ()
+staticDispatch prefix root =
+    SC.middleware
+    $ WS.staticPolicy
+    $ WS.noDots WS.>-> WS.hasPrefix prefix WS.>-> WS.addBase root
 
 eitherToMaybe :: Either a b -> Maybe b
 eitherToMaybe (Left _)  = Nothing
@@ -119,7 +124,7 @@ css = H.link
       H.! HA.rel "stylesheet"
       H.! HA.type_ "text/css"
       H.! HA.href path
-          where path = "/css/style.css"
+          where path = "/static/css/style.css"
 
 space :: H.Html
 space = " "
@@ -142,7 +147,7 @@ footer :: Text -> String -> String -> H.Html
 footer name email github = H.div H.! HA.id "footer" $ do
     link ("mailto:" ++ email) (H.toHtml name)
     link github logo
-        where logo = H.img H.! HA.src "/img/github.png"
+        where logo = H.img H.! HA.src "/static/img/github.png"
 
 renderIndex :: Blog H.Html
 renderIndex = do

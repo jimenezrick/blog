@@ -1,3 +1,3 @@
-![Profile photo](/img/avatar.png)
+![Me](/static/img/avatar.png)
 
 ## That's me!
