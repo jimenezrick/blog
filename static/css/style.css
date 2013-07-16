@@ -6,7 +6,6 @@
 body {
 	width: 40em;
 	margin: auto;
-	font-size: 1.1em;
 	font-family: "Ropa Sans", monospace;
 }
 
@@ -48,7 +47,8 @@ a:hover {
 }
 
 #index ul {
-	font-size: 1.3em;
+	font-size: 1.2em;
+	list-style-type: none;
 }
 
 div#info {
