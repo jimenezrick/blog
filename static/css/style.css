@@ -1,17 +1,13 @@
-@font-face {
-	font-family: "Ropa Sans";
-	src: url("/static/font/ropa-sans.ttf") format("truetype");
-}
-
 body {
+	font-family: serif;
 	width: 40em;
 	margin: auto;
-	font-family: "Ropa Sans", monospace;
 }
 
 h1 {
+	font-size: 2.3em;
+	font-family: sans-serif;
 	margin: 1.5em auto;
-	font-size: 2em;
 }
 
 p {
@@ -24,26 +20,24 @@ code {
 }
 
 pre {
-	padding-left: 0.8em;
-	border-left: thin solid #1569bc;
-	font-size: 0.9em;
 	font-family: monospace;
+	padding-left: 0.8em;
+	border-left: thin solid #222222;
 }
 
 hr {
 	height: 1px;
 	border: none;
-	color: black;
-	background-color: #1569bc;
+	background-color: #2ba6cb;
 }
 
 a {
-	color: #1569bc;
+	color: #2ba6cb;
 	text-decoration: none;
 }
 
 a:hover {
-	opacity: 0.5;
+	opacity: 0.8;
 }
 
 #index ul {
@@ -52,11 +46,14 @@ a:hover {
 }
 
 div#info {
-	color: #666666;
+	font-family: sans-serif;
+	font-size: 0.8em;
+	color: #222222;
 	margin: 1em auto;
 }
 
 div#footer {
+	font-family: sans-serif;
 	margin: 1.5em auto;
 	float: right;
 }
