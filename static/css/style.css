@@ -43,7 +43,13 @@ a:hover {
 }
 
 #index ul {
-	font-size: 1.4em;
+	font-family: sans-serif;
+	font-size: 1.2em;
+	list-style: none;
+}
+
+#index li {
+	border-bottom: thin solid #eeeeee;
 }
 
 div#header {
