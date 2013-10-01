@@ -27,6 +27,8 @@ import qualified Text.Blaze.Html5.Attributes          as HA
 
 type Blog = ReaderT Config IO
 
+type PostInfo = (Text, Maybe Text, Maybe Text)
+
 data Config = Config { configPort   :: Int
                      , configRoot   :: FilePath
                      , configFormat :: String
@@ -152,15 +154,18 @@ renderIndex = do
     email      <- reader configEmail
     github     <- reader configGitHub
     postPaths  <- liftM sort searchPosts
-    postTitles <- mapM renderPostName postPaths
+    postTitles <- mapM (renderPostInfo (\(t, _, _) -> H.toHtml t)) postPaths
+    postDates  <- mapM (renderPostInfo (\(_, _, d) -> dateToHtml d)) postPaths
     return $ H.docTypeHtml $ do
         head_ title
         H.body $
             H.div H.! HA.id "index" $ do
                 header title
                 H.ul $
-                    mapM_ (H.li . uncurry postLink) (zip postPaths postTitles)
+                    mapM_ (\(post, date) -> H.li (uncurry postLink post >> space >> date))
+                          (zip (zip postPaths postTitles) postDates)
                 footer name email github
+    where dateToHtml = maybe mempty H.toHtml
 
 link :: FilePath -> H.Html -> H.Html
 link u = H.a H.! HA.href (H.toValue u)
@@ -168,14 +173,13 @@ link u = H.a H.! HA.href (H.toValue u)
 postLink :: FilePath -> H.Html -> H.Html
 postLink = link . ("post" </>) . dropExtension
 
-renderPostName :: FilePath -> Blog H.Html
-renderPostName path = do
+renderPostInfo :: (PostInfo -> H.Html) -> FilePath -> Blog H.Html
+renderPostInfo f path = do
     text <- readPost path
     post <- parsePost text
-    let (title, _, _) = postInfo path post
-    return $ H.toHtml title
+    return $ f (postInfo path post)
 
-postInfo :: FilePath -> Pandoc -> (Text, Maybe Text, Maybe Text)
+postInfo :: FilePath -> Pandoc -> PostInfo
 postInfo path (Pandoc (Meta t as d) _) = (t', a, f d)
     where f [] = Nothing
           f x  = Just (pack $ stringify x)
