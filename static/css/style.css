@@ -73,8 +73,12 @@ div#info {
 
 div#footer {
 	font-family: sans-serif;
-	margin: 1.5em auto;
+	margin: 1em auto;
 	float: right;
+}
+
+div#footer img {
+	margin-left: 0.5em;
 }
 
 #footer a {

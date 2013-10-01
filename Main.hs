@@ -29,23 +29,25 @@ type Blog = ReaderT Config IO
 
 type PostInfo = (Text, Maybe Text, Maybe Text)
 
-data Config = Config { configPort   :: Int
-                     , configRoot   :: FilePath
-                     , configFormat :: String
-                     , configTitle  :: Text
-                     , configName   :: Text
-                     , configEmail  :: String
-                     , configGitHub :: String
+data Config = Config { configPort    :: Int
+                     , configRoot    :: FilePath
+                     , configFormat  :: String
+                     , configTitle   :: Text
+                     , configName    :: Text
+                     , configEmail   :: String
+                     , configGitHub  :: String
+                     , configTwitter :: String
                      }
 
 defaultConfig :: Config
-defaultConfig = Config { configPort   = 2000
-                       , configRoot   = "."
-                       , configFormat = "markdown"
-                       , configTitle  = "rlog"
-                       , configName   = "Ricardo Catalinas Jiménez"
-                       , configEmail  = "jimenezrick@gmail.com"
-                       , configGitHub = "https://github.com/jimenezrick"
+defaultConfig = Config { configPort    = 2000
+                       , configRoot    = "."
+                       , configFormat  = "markdown"
+                       , configTitle   = "rlog"
+                       , configName    = "Ricardo Catalinas Jiménez"
+                       , configEmail   = "jimenezrick@gmail.com"
+                       , configGitHub  = "https://github.com/jimenezrick"
+                       , configTwitter = "https://twitter.com/_jimenezrick"
                        }
 
 formatError :: a
@@ -141,11 +143,13 @@ info date author = H.div H.! HA.id "info" $ do
     maybe mempty (\d -> H.toHtml ("Published on " `mappend` d) >> H.br) date
     maybe mempty (\a -> H.toHtml ("by " `mappend` a)) author
 
-footer :: Text -> String -> String -> H.Html
-footer name email github = H.div H.! HA.id "footer" $ do
+footer :: Text -> String -> String -> String -> H.Html
+footer name email github twitter = H.div H.! HA.id "footer" $ do
     link ("mailto:" ++ email) (H.toHtml name)
-    link github logo
-        where logo = H.img H.! HA.src "/static/img/github.png"
+    link github githubLogo
+    link twitter twitterLogo
+        where githubLogo  = H.img H.! HA.src "/static/img/github.png"
+              twitterLogo = H.img H.! HA.src "/static/img/twitter.png"
 
 renderIndex :: Blog H.Html
 renderIndex = do
@@ -153,6 +157,7 @@ renderIndex = do
     name       <- reader configName
     email      <- reader configEmail
     github     <- reader configGitHub
+    twitter    <- reader configTwitter
     postPaths  <- liftM sort searchPosts
     postTitles <- mapM (renderPostInfo (\(t, _, _) -> H.toHtml t)) postPaths
     postDates  <- mapM (renderPostInfo (\(_, _, d) -> dateToHtml d)) postPaths
@@ -164,7 +169,7 @@ renderIndex = do
                 H.ul $
                     mapM_ (\(post, date) -> H.li (uncurry postLink post >> space >> date))
                           (zip (zip postPaths postTitles) postDates)
-                footer name email github
+                footer name email github twitter
     where dateToHtml = maybe mempty H.toHtml
 
 link :: FilePath -> H.Html -> H.Html
@@ -198,11 +203,12 @@ titleFromFilename file = foldr f [] $ (cap . dropExtension . takeFileName) file
 
 renderPost :: FilePath -> Blog H.Html
 renderPost path = do
-    name   <- reader configName
-    email  <- reader configEmail
-    github <- reader configGitHub
-    text   <- readPost path
-    post   <- parsePost text
+    name    <- reader configName
+    email   <- reader configEmail
+    github  <- reader configGitHub
+    twitter <- reader configTwitter
+    text    <- readPost path
+    post    <- parsePost text
     let content               = toHtml post
         (title, author, date) = postInfo path post
     return $ H.docTypeHtml $ do
@@ -212,7 +218,7 @@ renderPost path = do
                 header title
                 info date author
                 content
-                footer name email github
+                footer name email github twitter
 
 readPost :: FilePath -> Blog String
 readPost path = do
