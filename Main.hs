@@ -62,7 +62,8 @@ postExtension _          = formatError
 main :: IO ()
 main = do
     SC.scotty port $ do
-        SC.middleware WL.logStdout
+        logging
+        favicon
         staticDispatch "static/" root
         staticDispatch "posts/" root
         SC.get "/" $ do
@@ -89,6 +90,12 @@ main = do
           conf     = defaultConfig
           root     = configRoot conf
           port     = configPort conf
+
+logging :: SC.ScottyM ()
+logging = SC.middleware WL.logStdout
+
+favicon :: SC.ScottyM ()
+favicon = SC.middleware $ WS.staticPolicy $ WS.predicate (== "favicon.ico")
 
 staticDispatch :: String -> String -> SC.ScottyM ()
 staticDispatch prefix root =
