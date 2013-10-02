@@ -9,13 +9,13 @@ import Control.Monad.Reader
 import Control.Exception
 import System.IO.Error
 
-import Data.Default                  (def)
-import Data.Text.Lazy                (Text, pack)
-import System.FilePath               ((</>), takeFileName, takeExtension, dropExtension)
-import System.Directory              (getDirectoryContents, doesDirectoryExist)
-import Text.Pandoc.Definition        (Pandoc(..), Meta(..))
-import Text.Pandoc.Shared            (stringify)
-import Text.Blaze.Html.Renderer.Text (renderHtml)
+import Data.Default                                   (def)
+import Data.Text.Lazy                                 (Text, pack)
+import System.FilePath                                ((</>), takeFileName, takeExtension, dropExtension)
+import System.Directory                               (getDirectoryContents, doesDirectoryExist)
+import Text.Pandoc.Definition                         (Pandoc(..), Meta(..))
+import Text.Pandoc.Shared                             (stringify)
+import Text.Blaze.Html.Renderer.Text                  (renderHtml)
 
 import qualified Data.Set                             as S
 import qualified Text.Pandoc                          as P
