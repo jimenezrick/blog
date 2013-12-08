@@ -160,7 +160,7 @@ renderIndex = do
     name       <- reader configName
     email      <- reader configEmail
     github     <- reader configGitHub
-    postPaths  <- liftM sort searchPosts
+    postPaths  <- liftM (reverse . sort) searchPosts
     postTitles <- mapM (renderPostInfo (\(t, _, _) -> H.toHtml t)) postPaths
     postDates  <- mapM (renderPostInfo (\(_, _, d) -> dateToHtml d)) postPaths
     return $ H.docTypeHtml $ do
