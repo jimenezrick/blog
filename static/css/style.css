@@ -38,7 +38,7 @@ a {
 }
 
 a:hover {
-	opacity: 0.8;
+	opacity: 0.6;
 }
 
 #index ul {
@@ -80,6 +80,7 @@ div#footer {
 }
 
 div#footer img {
+	max-width: 3em;
 	margin-left: 0.5em;
 }
 
