@@ -13,5 +13,8 @@ of real engineering advantages.
 forget that you are not only pragmatic but emotional as well, even more
 than you think. Thus don't try so hard to hide it. Just accept it.
 
+  From any number of programming languages that fit the bill, choose the
+one that you are going to be the happiest working with.
+
   And yes, this blog is written in Haskell and I did very much enjoy by
 doing so.
