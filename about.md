@@ -11,6 +11,7 @@ Because writing good software implies:
 - Following the KISS principle
 - Following the UNIX philosophy
 - Small, simple and modular is better than big, complex and monolithic
+- Using a decent OS and a good programming language
 
   Because if someone is creating accidental complexity instead solving
 the actual problem, because if someone is creating a huge monolithic
