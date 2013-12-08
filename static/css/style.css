@@ -5,6 +5,7 @@
 
 body {
 	font-family: Raleway;
+	font-size: large;
 	width: 35em;
 	margin: auto;
 }
@@ -59,22 +60,22 @@ a:hover {
 }
 
 div#header {
-	font-size: 2em;
+	font-size: 1.4em;
 }
 
 #header h1 {
-	font-size: 2em;
+	font-size: 2.8em;
 	margin: 1.5em auto;
 }
 
 div#info {
 	font-style: oblique;
 	color: #4e4e4e;
-	margin: 1em auto;
+	margin: 1em auto 2em auto;
 }
 
 div#footer {
-	margin: 1em auto;
+	margin: 2em auto;
 	float: right;
 }
 
