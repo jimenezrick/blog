@@ -36,7 +36,6 @@ data Config = Config { configPort    :: Int
                      , configName    :: Text
                      , configEmail   :: String
                      , configGitHub  :: String
-                     , configTwitter :: String
                      }
 
 defaultConfig :: Config
@@ -47,7 +46,6 @@ defaultConfig = Config { configPort    = 2000
                        , configName    = "Ricardo Catalinas Jiménez"
                        , configEmail   = "jimenezrick@gmail.com"
                        , configGitHub  = "https://github.com/jimenezrick"
-                       , configTwitter = "https://twitter.com/_jimenezrick"
                        }
 
 formatError :: a
@@ -150,13 +148,11 @@ info date author = H.div H.! HA.id "info" $ do
     maybe mempty (\d -> H.toHtml ("Published on " `mappend` d) >> H.br) date
     maybe mempty (\a -> H.toHtml ("by " `mappend` a)) author
 
-footer :: Text -> String -> String -> String -> H.Html
-footer name email github twitter = H.div H.! HA.id "footer" $ do
+footer :: Text -> String -> String -> H.Html
+footer name email github = H.div H.! HA.id "footer" $ do
     link ("mailto:" ++ email) (H.toHtml name)
     link github githubLogo
-    link twitter twitterLogo
         where githubLogo  = H.img H.! HA.src "/static/img/github.png"
-              twitterLogo = H.img H.! HA.src "/static/img/twitter.png"
 
 renderIndex :: Blog H.Html
 renderIndex = do
@@ -164,7 +160,6 @@ renderIndex = do
     name       <- reader configName
     email      <- reader configEmail
     github     <- reader configGitHub
-    twitter    <- reader configTwitter
     postPaths  <- liftM sort searchPosts
     postTitles <- mapM (renderPostInfo (\(t, _, _) -> H.toHtml t)) postPaths
     postDates  <- mapM (renderPostInfo (\(_, _, d) -> dateToHtml d)) postPaths
@@ -176,7 +171,7 @@ renderIndex = do
                 H.ul $
                     mapM_ (\(post, date) -> H.li (uncurry postLink post >> space >> date))
                           (zip (zip postPaths postTitles) postDates)
-                footer name email github twitter
+                footer name email github
     where dateToHtml = maybe mempty H.toHtml
 
 link :: FilePath -> H.Html -> H.Html
@@ -213,7 +208,6 @@ renderPost path = do
     name    <- reader configName
     email   <- reader configEmail
     github  <- reader configGitHub
-    twitter <- reader configTwitter
     text    <- readPost path
     post    <- parsePost text
     let content               = toHtml post
@@ -225,7 +219,7 @@ renderPost path = do
                 header title
                 info date author
                 content
-                footer name email github twitter
+                footer name email github
 
 readPost :: FilePath -> Blog String
 readPost path = do
