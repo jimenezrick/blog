@@ -55,7 +55,7 @@ moment system automation stepped back one decade. I don't like to be all
 day long typing, but at least I can automate many repetitive tasks.
 
   What bothers me the most is the fact that OS X is a crappy UNIX when
-most developers nowadays work in an UNIX dominated work where most
-servers run Linux with the software written by these developers.
+most developers nowadays work in an UNIX dominated environment where
+most servers run Linux with the software written by these developers.
 
 So, no thanks, I don't enjoy these slow, broken, beautiful computers.
