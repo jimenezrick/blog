@@ -1,6 +1,9 @@
 @font-face {
 	font-family: 'Lato';
-	src: url('/static/font/Lato-Reg.ttf') format('truetype');
+	font-style: normal;
+	font-weight: 400;
+	src: url('http://themes.googleusercontent.com/static/fonts/lato/v7/9k-RPmcnxYEPm8CNFsH2gg.woff') format('woff'),
+	     url('/static/font/Lato-Regular.ttf') format('truetype');
 }
 
 body {
