@@ -25,7 +25,7 @@ code {
 
 pre {
 	font-family: monospace;
-	font-size: small;
+	font-size: medium;
 	padding-left: 0.8em;
 	border-left: thin solid #4e4e4e;
 }
@@ -73,7 +73,7 @@ div#header {
 }
 
 div#info {
-	font-style: oblique;
+	font-size: medium;
 	color: #4e4e4e;
 	margin: 1em auto 2em auto;
 }
