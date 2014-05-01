@@ -1,6 +1,6 @@
 % Night mode for Xorg
 % Ricardo Catalinas Jiménez
-% 30 April 2014
+% 1 May 2014
 
 
   I just wanted to share a simple script I use when I'm working late in
@@ -16,26 +16,13 @@ blue component and the brightness of all my Xorg displays:
 
 	#!/bin/sh
 
-	BLUE=0.5
-	BRIGHTNESS=0.7
-	OUTPUTS=$(xrandr | sed -n 's/^\([^ ]*\).*\<connected\>.*/\1/p')
-
 	adjust_output() {
-		blue=$1
-		brightness=$2
-		shift 2
-
-		for out in $*
-		do
-			xrandr --output $out --gamma 1:1:$blue --brightness $brightness
+		for out in $(xrandr | sed -n 's/^\([^ ]*\).*\<connected\>.*/\1/p'); do
+			xrandr --output $out --gamma $1 --brightness $2
 		done
 	}
 
 	case $1 in
-		off)
-			adjust_output 1 1.0 $OUTPUTS
-			;;
-		*)
-			adjust_output $BLUE $BRIGHTNESS $OUTPUTS
-			;;
+		off) adjust_output 1:1:1   1.0 ;;
+		*)   adjust_output 1:1:0.5 0.7 ;;
 	esac
