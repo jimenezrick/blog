@@ -1,5 +1,5 @@
 description :: String
-description = "Minimal blog written in Haskell"
+description = "Minimalist blog engine written in Haskell"
 
 install :: IO ()
 install = do cabal configure

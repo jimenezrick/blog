@@ -1,6 +1,6 @@
 name:                rlog
 version:             0.1
-synopsis:            Minimal blog
+synopsis:            Minimalist blog engine
 homepage:            https://github.com/jimenezrick/rlog
 author:              Ricardo Catalinas Jiménez <jimenezrick@gmail.com>
 category:            Web
