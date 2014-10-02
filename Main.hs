@@ -1,7 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import Prelude                                        hiding (null)
 import Data.Char
-import Data.List
+import Data.List                                      hiding (null)
 import Data.Maybe
 import Data.Monoid
 import Control.Monad
@@ -10,10 +11,10 @@ import Control.Exception
 import System.IO.Error
 
 import Data.Default                                   (def)
-import Data.Text.Lazy                                 (Text, pack)
+import Data.Text.Lazy                                 (Text, pack, null)
 import System.FilePath                                ((</>), takeFileName, takeExtension, dropExtension)
 import System.Directory                               (getDirectoryContents, doesDirectoryExist)
-import Text.Pandoc.Definition                         (Pandoc(..), Meta(..))
+import Text.Pandoc.Definition                         (Pandoc(..), docTitle, docAuthors, docDate)
 import Text.Pandoc.Shared                             (stringify)
 import Text.Blaze.Html.Renderer.Text                  (renderHtml)
 
@@ -192,13 +193,14 @@ renderPostInfo f path = do
     return $ f (postInfo path post)
 
 postInfo :: FilePath -> Pandoc -> PostInfo
-postInfo path (Pandoc (Meta t as d) _) = (t', a, f d)
-    where f [] = Nothing
-          f x  = Just (pack $ stringify x)
-          a    = case as of
-                   [] -> Nothing
-                   _  -> f (head as)
-          t'   = fromMaybe (pack $ titleFromFilename path) (f t)
+postInfo path (Pandoc meta _) = (title, auths, date)
+    where title = let t = text $ docTitle meta
+                  in if null t
+                       then pack $ titleFromFilename path
+                       else t
+          auths = maybe Nothing (Just . text) (listToMaybe $ docAuthors meta)
+          date  = Just $ text $ docDate meta
+          text  = pack . stringify
 
 titleFromFilename :: FilePath -> String
 titleFromFilename file = foldr f [] $ (cap . dropExtension . takeFileName) file
