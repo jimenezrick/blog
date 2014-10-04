@@ -85,6 +85,7 @@ div#footer {
 
 div#footer img {
 	max-width: 3em;
+	max-height: 3em;
 	margin-left: 0.5em;
 }
 
