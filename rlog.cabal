@@ -11,7 +11,7 @@ Flag Static
   Default:           False
 
 executable rlog
-  if flag(Static)
+  if flag(static)
     ghc-options:     -Wall -O2 -threaded -rtsopts -static
                      -optc-static -optl-static -optl-pthread
   else

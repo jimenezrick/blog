@@ -1,10 +1,9 @@
-.PHONY: clean
+.PHONY: all clean
 
-# TODO: bin target, flag static, strip install?
-all: | .cabal-sandbox
-	cabal configure
-	cabal build
-	#cabal install
+all: .cabal-sandbox/bin/rlog
+
+.cabal-sandbox/bin/rlog: Main.hs | .cabal-sandbox
+	cabal install
 
 .cabal-sandbox:
 	cabal sandbox init
