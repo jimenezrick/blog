@@ -1,8 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import Prelude                                        hiding (null)
 import Data.Char
-import Data.List                                      hiding (null)
+import Data.List
 import Data.Maybe
 import Data.Monoid
 import Control.Monad
@@ -11,7 +10,7 @@ import Control.Exception
 import System.IO.Error
 
 import Data.Default                                   (def)
-import Data.Text.Lazy                                 (Text, pack, null)
+import Data.Text.Lazy                                 (Text)
 import System.FilePath                                ((</>), takeFileName, takeExtension, dropExtension)
 import System.Directory                               (getDirectoryContents, doesDirectoryExist)
 import Text.Pandoc.Definition                         (Pandoc(..), docTitle, docAuthors, docDate)
@@ -20,6 +19,7 @@ import Text.Blaze.Html.Renderer.Text                  (renderHtml)
 
 import qualified Data.ByteString.Lazy.Char8           as BS
 import qualified Data.Set                             as S
+import qualified Data.Text.Lazy                       as T
 import qualified Text.Pandoc                          as P
 import qualified Web.Scotty                           as SC
 import qualified Network.Wai.Middleware.Static        as WS
@@ -195,13 +195,11 @@ renderPostInfo f path = do
 
 postInfo :: FilePath -> Pandoc -> PostInfo
 postInfo path (Pandoc meta _) = (title, auths, date)
-    where title = let t = text $ docTitle meta
-                  in if null t
-                       then pack $ titleFromFilename path
-                       else t
-          auths = maybe Nothing (Just . text) (listToMaybe $ docAuthors meta)
-          date  = Just $ text $ docDate meta
-          text  = pack . stringify
+    where title    = maybe (T.pack $ titleFromFilename path) text (nonull $ docTitle meta)
+          auths    = maybe Nothing (Just . text . intercalate [P.Str ", "]) (nonull $ docAuthors meta)
+          date     = maybe Nothing (Just . text) (nonull $ docDate meta)
+          text     = T.pack . stringify
+          nonull s = if null s then Nothing else Just s
 
 titleFromFilename :: FilePath -> String
 titleFromFilename file = foldr f [] $ (cap . dropExtension . takeFileName) file
