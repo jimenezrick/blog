@@ -18,6 +18,7 @@ import Text.Pandoc.Definition                         (Pandoc(..), docTitle, doc
 import Text.Pandoc.Shared                             (stringify)
 import Text.Blaze.Html.Renderer.Text                  (renderHtml)
 
+import qualified Data.ByteString.Lazy.Char8           as BS
 import qualified Data.Set                             as S
 import qualified Text.Pandoc                          as P
 import qualified Web.Scotty                           as SC
@@ -237,9 +238,11 @@ readPost path = do
 parsePost :: String -> Blog Pandoc
 parsePost text = do
     format <- reader configFormat
-    maybe formatError (\p -> liftIO $ p opts text) (lookup format P.readers)
-        where exts = S.delete P.Ext_implicit_figures (P.readerExtensions def)
-              opts = def {P.readerExtensions = exts}
+    maybe formatError (liftIO . parse) (lookup format P.readers)
+        where exts                         = S.delete P.Ext_implicit_figures (P.readerExtensions def)
+              opts                         = def {P.readerExtensions = exts}
+              parse (P.StringReader p)     = p opts text
+              parse (P.ByteStringReader p) = p opts (BS.pack text) >>= return . fst
 
 toHtml :: Pandoc -> H.Html
 toHtml = P.writeHtml def {P.writerHtml5 = True}
