@@ -10,5 +10,5 @@ all: .cabal-sandbox/bin/rlog
 	cabal install --only-dependencies
 
 clean:
-	cabal sandbox delete
 	cabal clean
+	cabal sandbox delete
