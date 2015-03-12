@@ -1,0 +1,7 @@
+respawn
+respawn limit 10 5
+
+script
+	cd /srv/rlog
+	exec /srv/rlog/rlog
+end script
