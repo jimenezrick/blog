@@ -1,6 +1,6 @@
 % OS X sucks for developers plain and simple
 % Ricardo Catalinas Jiménez
-% 8 December 2013
+% 8 Dec 2013
 
 
   My main concern is about this hype with every developer switching to

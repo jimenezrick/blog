@@ -1,6 +1,6 @@
 % Using Gigabyte GA-990FXA-UD3 AM3+ with Linux
 % Ricardo Catalinas Jiménez
-% 8 December 2013
+% 8 Dec 2013
 
 
   In case you are an owner of the motherboard **Gigabyte GA-990FXA-UD3

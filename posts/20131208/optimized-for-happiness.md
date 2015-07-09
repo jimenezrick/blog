@@ -1,6 +1,6 @@
 % Optimized for happiness
 % Ricardo Catalinas Jiménez
-% 8 December 2013
+% 8 Dec 2013
 
 
   It is so frequently common these days to publish in the web some

@@ -1,6 +1,6 @@
 % Multi-line regexps: searching on plain text
 % Ricardo Catalinas Jiménez
-% 10 June 2013
+% 10 Jun 2013
 
 
   I always like to keep everything in plain text but sometimes it is a

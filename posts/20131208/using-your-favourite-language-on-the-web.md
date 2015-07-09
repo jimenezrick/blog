@@ -1,6 +1,6 @@
 % Using your favourite programming language on the web
 % Ricardo Catalinas Jiménez
-% 8 December 2013
+% 8 Dec 2013
 
 
   The Web as we know is a f!cking shameful mess of technologies but one
