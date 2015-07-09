@@ -48,11 +48,10 @@ a:hover {
 #index ul {
 	list-style: none;
 	padding: 0;
-	color: #4e4e4e;
+	color: #6e6e6e;
 }
 
 #index li {
-	font-family: monospace;
 	border-bottom: thin solid #eeeeee;
 	padding: 0.5em;
 }
