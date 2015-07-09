@@ -73,8 +73,8 @@ div#header {
 }
 
 div#info {
-	font-family: monospace;
-	color: #4e4e4e;
+	font-size: large;
+	color: #6e6e6e;
 	margin: 1em auto 2em auto;
 }
 
