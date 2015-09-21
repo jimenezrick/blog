@@ -2,7 +2,7 @@ name:                rlog
 version:             0.2.0.0
 synopsis:            Minimalist blog engine
 homepage:            https://github.com/jimenezrick/rlog
-author:              Ricardo Catalinas Jiménez <jimenezrick@gmail.com>
+author:              Ricardo Catalinas Jiménez <r@untroubled.be>
 category:            Web
 build-type:          Simple
 cabal-version:       >= 1.8

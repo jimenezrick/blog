@@ -47,7 +47,7 @@ defaultConfig = Config { configPort    = 2000
                        , configFormat  = "markdown"
                        , configTitle   = "rlog"
                        , configName    = "Ricardo Catalinas Jiménez"
-                       , configEmail   = "jimenezrick@gmail.com"
+                       , configEmail   = "r@untroubled.be"
                        , configGitHub  = "https://github.com/jimenezrick"
                        , configTwitter = "https://twitter.com/_jimenezrick"
                        }
