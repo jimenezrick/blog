@@ -72,7 +72,9 @@ div#header {
 }
 
 div#info {
-	font-size: large;
+	font-family: serif;
+	font-style: oblique;
+	font-size: x-large;
 	color: #6e6e6e;
 	margin: 1em auto 2em auto;
 }
