@@ -10,7 +10,7 @@ system designed to be easy to use.
 
   The problem lies in the loss of control and productivity for the
 developer. It is a system design for non-experts used by too many
-supposedly software experts.
+software professionals.
 
   Loss of control because OS X is a system without package management!
 Because many software doesn't compile cleanly on OS X and you need to
